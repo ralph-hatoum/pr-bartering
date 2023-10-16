@@ -1,49 +1,42 @@
 package api_ipfs
 
 import (
-	"fmt"
 	"os/exec"
+
+	"../utils"
 )
 
-func uploadToIPFS(path string) string {
+func UploadToIPFS(path string) string {
 	cmd := "ipfs"
 	args := []string{"add", path}
 
 	output, err := exec.Command(cmd, args...).Output()
 
-	errorHandler(err)
+	utils.ErrorHandler(err)
 
 	return string(output)
 
 }
 
-func pinToIPFS(cid string) string {
+func PinToIPFS(cid string) string {
 	cmd := "ipfs"
 	args := []string{"pin", "add", cid}
 
 	output, err := exec.Command(cmd, args...).Output()
 
-	errorHandler(err)
+	utils.ErrorHandler(err)
 
 	return string(output)
 
 }
 
-func unpinIPFS(cid string) string {
+func UnpinIPFS(cid string) string {
 	cmd := "ipfs"
 	args := []string{"pin", "rm", cid}
 
 	output, err := exec.Command(cmd, args...).Output()
 
-	errorHandler(err)
+	utils.ErrorHandler(err)
 
 	return string(output)
-}
-
-func errorHandler(err error) {
-	if err != nil {
-		fmt.Println("ERROR")
-		fmt.Println(err)
-		panic(0)
-	}
 }
