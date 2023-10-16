@@ -1,5 +1,9 @@
 package bootstrapconnect
 
+/*
+Functions to interact with the bootstrap node of the network
+*/
+
 import (
 	"bufio"
 	"encoding/json"
@@ -12,7 +16,12 @@ import (
 	"../utils"
 )
 
-func GetPeersFromBootstrapTCP(IP string, port string) {
+func GetPeersFromBootstrapTCP(IP string, port string) string {
+	/*
+		Function to get peers from the bootstrap node via TCP
+		Arguments : IP of bootsrap as string, port as string
+		Returns : bootstrap's response as string
+	*/
 
 	serverAddress := IP + ":" + port
 	conn, err := net.Dial("tcp", serverAddress)
@@ -20,43 +29,57 @@ func GetPeersFromBootstrapTCP(IP string, port string) {
 
 	defer conn.Close()
 
-	message := "hello\n"
+	messageToBootstrap := "hello\n"
 
-	_, err = io.WriteString(conn, message)
+	_, err = io.WriteString(conn, messageToBootstrap)
 	utils.ErrorHandler(err)
 
 	fmt.Println("Called bootstrap, awaiting response")
 
-	reader := bufio.NewReader(conn)
+	boostrapResponseReader := bufio.NewReader(conn)
 
-	response, err := reader.ReadString('\n')
+	boostrapResponse, err := boostrapResponseReader.ReadString('\n')
 	utils.ErrorHandler(err)
-	fmt.Println(response)
 
+	return boostrapResponse
 }
 
 func GetPeersFromBootstrapHTTP(IP string, port string) []string {
-	serverUrl := IP + ":" + port
+	/*
+		Function to get peers from the bootstrap node via HTTP
+		Arguments : IP of bootsrap as string, port as string
+		Returns : bootstrap's response as string
+	*/
 
-	response, err := http.Get("http://" + serverUrl)
+	bootstrapUrl := IP + ":" + port
+
+	bootstrapResponse, err := http.Get("http://" + bootstrapUrl)
 	utils.ErrorHandler(err)
 
-	defer response.Body.Close()
+	defer bootstrapResponse.Body.Close()
 
-	if response.StatusCode != http.StatusOK {
-		fmt.Println("HTTP request failed with status code:", response.StatusCode)
+	if bootstrapResponse.StatusCode != http.StatusOK {
+		fmt.Println("HTTP request failed with status code:", bootstrapResponse.StatusCode)
 		panic(-1)
 	}
 
-	body, err := ioutil.ReadAll(response.Body)
+	bootstrapResponseBody, err := ioutil.ReadAll(bootstrapResponse.Body)
 	utils.ErrorHandler(err)
 
 	var peers []string
 
-	err = json.Unmarshal(body, &peers)
+	err = json.Unmarshal(bootstrapResponseBody, &peers)
 
 	utils.ErrorHandler(err)
 
 	return peers
+
+}
+
+func AnnounceSelfToBootstrap(IP string, port string) {
+	/*
+		Function to call the bootstrap to annouce self and add IP to the IPs that will be announced by the bootstrap
+		Arguments : IP as string, port as string
+	*/
 
 }
