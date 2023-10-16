@@ -1,13 +1,24 @@
 package functions
 
 import (
+	"bufio"
+	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"strings"
 )
 
-func NodeStartup() ([]string, []string, []string, []string) {
+type StorageRequest struct {
+	CID      string
+	fileSize float64
+}
+
+func NodeStartup() ([]string, []StorageRequest, []StorageRequest, []string) {
 
 	fmt.Println("Starting node")
 	// Create all needed data structures
@@ -18,13 +29,12 @@ func NodeStartup() ([]string, []string, []string, []string) {
 
 	//Create peers list
 	fmt.Println("Creating peers list")
-	peers := createPeersList()
-	fmt.Println("Peers list created successfully")
+	peers := getPeersFromBootstrapHTTP("127.0.0.1", "8080")
 
 	return storage_pool, pending_requests, fulfilled_requests, peers
 }
 
-func Store(path string, storage_pool []string) {
+func Store(path string, storage_pool []string, pending_requests []StorageRequest) {
 	// Function called to store a file on the network
 
 	// Uploading file to IPFS & retrieving its CID
@@ -41,24 +51,21 @@ func Store(path string, storage_pool []string) {
 
 	fmt.Println(file_size)
 
-	//storage_request := (CID)
+	storage_request := StorageRequest{CID, file_size}
+
+	pending_requests = append(pending_requests, storage_request)
+
+	fmt.Println("Pending requests : ", pending_requests)
 	// TODO build storage request
 	// TODO propagate to network
 }
 
-func createPeersList() []string {
-
-	peersList := []string{}
-
-	return peersList
-}
-
-func createStorageRequestsLists() ([]string, []string, []string) {
+func createStorageRequestsLists() ([]string, []StorageRequest, []StorageRequest) {
 	storage_pool := []string{}
 
-	pending_requests := []string{}
+	pending_requests := []StorageRequest{}
 
-	fulfilled_requests := []string{}
+	fulfilled_requests := []StorageRequest{}
 
 	return storage_pool, pending_requests, fulfilled_requests
 
@@ -121,4 +128,53 @@ func getFileSize(path string) float64 {
 	fileSize := fileInfo.Size()
 
 	return float64(fileSize) / 1024.0
+}
+
+func getPeersFromBootstrapTCP(IP string, port string) {
+
+	serverAddress := IP + ":" + port
+	conn, err := net.Dial("tcp", serverAddress)
+	errorHandler(err)
+
+	defer conn.Close()
+
+	message := "hello\n"
+
+	_, err = io.WriteString(conn, message)
+	errorHandler(err)
+
+	fmt.Println("Called bootstrap, awaiting response")
+
+	reader := bufio.NewReader(conn)
+
+	response, err := reader.ReadString('\n')
+	errorHandler(err)
+	fmt.Println(response)
+
+}
+
+func getPeersFromBootstrapHTTP(IP string, port string) []string {
+	serverUrl := IP + ":" + port
+
+	response, err := http.Get("http://" + serverUrl)
+	errorHandler(err)
+
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		fmt.Println("HTTP request failed with status code:", response.StatusCode)
+		panic(-1)
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
+	errorHandler(err)
+
+	var peers []string
+
+	err = json.Unmarshal(body, &peers)
+
+	errorHandler(err)
+
+	return peers
+
 }
