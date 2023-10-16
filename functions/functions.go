@@ -2,7 +2,6 @@ package functions
 
 import (
 	"fmt"
-	"strings"
 
 	api_ipfs "../api-ipfs"
 
@@ -35,9 +34,8 @@ func NodeStartup() ([]string, []StorageRequest, []StorageRequest, []string) {
 func Store(path string, storage_pool []string, pending_requests []StorageRequest) {
 	// Function called to store a file on the network
 
-	// Uploading file to IPFS & retrieving its CID
-	upload_command_result := api_ipfs.UploadToIPFS(path)
-	CID := strings.Split(upload_command_result, " ")[1]
+	// Uploading file to IPFS
+	CID := api_ipfs.UploadToIPFS(path)
 
 	// Add the CID to the storage pool
 	storage_pool = append(storage_pool, CID)
