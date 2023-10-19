@@ -3,6 +3,7 @@ package bartering
 import (
 	"../functions"
 	"./functions"
+	"sync"
 )
 
 type NodeScore struct {
@@ -12,7 +13,9 @@ type NodeScore struct {
 
 var InitScore = 10.0
 
-var AcceptanceTolerance = 10.0
+var AcceptanceTolerance = 0.5
+
+var AcceptanceToleranceMutex = sync.Mutex
 
 var NodeTotalStorageSpace = 200
 
@@ -36,17 +39,22 @@ func ElectStorageNodes() []string {
 }
 
 func CheckCIDValidity(storageRequest functions.StorageRequest) {
-	/* Check if : CID is valid and exists */
+	/* 
+		Check if : CID is valid and exists 
+	*/
 }
 
 func CheckFileSizeValidity(storageRequest functions.StorageRequest) {
-	/* Check if fileSize announced in storage request is declared honestly */
+	/* 
+		Check if fileSize announced in storage request is declared honestly 
+	*/
 }
 
 func CheckEnoughSpace(storageRequest functions.StorageRequest, currentStorageSpace float64) bool {
-	/* Check if self has enough space to store the file
-	Arguments : storage request of type StorageRequest, current storage space used as float64
-	Returns : boolean
+	/* 
+		Check if self has enough space to store the file
+		Arguments : storage request of type StorageRequest, current storage space used as float64
+		Returns : boolean
 	*/
 	if storageRequest.fileSize+currentStorageSpace < NodeTotalStorageSpace {
 		return true
@@ -57,20 +65,46 @@ func CheckEnoughSpace(storageRequest functions.StorageRequest, currentStorageSpa
 func dealWithRefusedRequest(storageRequest functions.StorageRequest) {
 	/*
 		Function to deal with a refused storage request
+		In our case for now we will consider that if the storage is refused, 
+		then the tolerance needs to go up
 	*/
+
+	fileSize := storageRequest.fileSize
+
+	delta := fileSize/NodeTotalStorageSpace
+
+	increaseTolerance(delta)
+
 }
 
 func craftNewRq(storageRequest functions.StorageRequest) functions.StorageRequest {
 	/*
-	Function to craft a new better suited request aftet it was refused
+		Function to craft a new better suited request aftet it was refused
 	*/
 
 }
 
-func updateTolerance() {
+func increaseTolerance(delta float64) {
 	/*
-	Function to update tolerance 
+		Function to increase tolerance
 	*/
+
+	AcceptanceToleranceMutex.Lock()
+	AcceptanceTolerance += delta
+	AcceptanceToleranceMutex.Unlock()
+
+
+}
+
+func decreaseTolerance(delta float64) {
+	/*
+		Function to decrease tolerance
+	*/
+
+	AcceptanceToleranceMutex.Lock()
+	AcceptanceTolerance -= delta
+	AcceptanceToleranceMutex.Unlock()
+
 
 }
 

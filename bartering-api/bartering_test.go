@@ -22,14 +22,18 @@ func TestCheckEnoughSpace(t *testing.T) {
 
 }
 
-func TestDealWithRefusedRequest(dealWithRefusedRequest){
+func TestDealWithRefusedRequest(t *testing.T){
 
 }
 
-func TestUpdateTolerance(dealWithRefusedRequest) {
+func TestIncreaseTolerance(t *testing.T) {
 
 }
 
-func TestShouldReqBeAccepted(dealWithRefusedRequest) {
+func TestDecreaseTolerance(t *testing.T) {
+
+}
+
+func TestShouldReqBeAccepted(t *testing.T) {
 
 }
