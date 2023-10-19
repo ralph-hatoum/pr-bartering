@@ -71,6 +71,14 @@ func Store(path string, storage_pool []string, pending_requests []StorageRequest
 
 	fmt.Println("Pending requests : ", pending_requests)
 
+	// Choose peers to propagate request to peersToPropagate := 
+
+	// Await answer
+
+	//
+
+
+
 	// propagateToPeers()
 
 	// TODO propagate to network
