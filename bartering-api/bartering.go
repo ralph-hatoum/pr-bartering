@@ -39,6 +39,10 @@ var PORT = "8083"
 var currentRatio float64
 
 func InitiateBarter(peer string) {
+	/*
+		Function to barter the storage ratio
+		Arguments : IP of peer as string
+	*/
 
 	newRatio := calculateNewRatio(currentRatio)
 
@@ -59,6 +63,11 @@ func InitiateBarter(peer string) {
 }
 
 func respondToBarterMsg(barterMsg string, peer string, storageSpace float64, bytesAtPeers []PeerStorageUse, scores []NodeScore) {
+	/*
+		Function to answer a barter request
+		Arguments : message received as a string, the peer who sent it as a string, the storage space on the node as float64,
+		the bytes stored at each peer as a list of PeerStorageUse objects, the scores of peers as a list of NodeScore objects
+	*/
 
 	barterMsg_ratioRq := barterMsg[7:]
 	barterMsg_ratio, err := strconv.ParseFloat(barterMsg_ratioRq, 64)
@@ -69,6 +78,12 @@ func respondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 }
 
 func calculateNewRatio(ratio float64) float64 {
+	/*
+		Function to  calculate the new ratio to use
+		Arguments : the current ratio as float 64
+		Returns : new ratio as float64
+	*/
+
 	return ratio * (1 + RatioIncreaseRate)
 }
 
@@ -77,22 +92,46 @@ func updateRatio(ratio float64) {
 }
 
 func shouldRatioBeAccepted(ratio float64, peer string, storageSpace float64, bytesAtPeers []PeerStorageUse, scores []NodeScore) bool {
+	/*
+		Function to decided based off score and current storage space if the barter request can be accepted
+		Arguments : current ratio as float64, the peer id as string, the current storage space as float64, the bytes stored at peers
+		as a list of PeerStorageUse objects, the scores as a list of NodeScore objects
+		Returns : boolean
+	*/
+
 	return isRatioTolerableGivenStorageSpace(peer, ratio, storageSpace, bytesAtPeers) && (ratio < calculateMaxAcceptableRatio(peer, scores))
 }
 
 func shouldResponseRatioBeAccepted(ratio float64) bool {
+	/*
+		Function to decide whether the counter barter made by the other peer should be accepted or not
+		Arguments : the proposed ratio as float64
+		Returns : boolean
+	*/
+
 	return true
 }
 
 func isRatioTolerableGivenStorageSpace(peer string, ratio float64, storageSpace float64, bytesAtPeers []PeerStorageUse) bool {
+	/*
+		Function to decided if the propoed ratio is tolerable given the current storage space on the node
+		Arguments : id of the peer as string, current ratio as float64, storage space on the node as float64, bytes stored at the peer
+		as a PeerStorageUse object list
+		Returns : boolean
+	*/
+
 	peerStorageUse, err := findPeerStorageUse(peer, bytesAtPeers)
 	utils.ErrorHandler(err)
 
-	return peerStorageUse.StorageAtNode < storageSpace
+	return peerStorageUse.StorageAtNode*ratio < storageSpace
 }
 
 func findPeerStorageUse(peer string, bytesAtPeers []PeerStorageUse) (PeerStorageUse, error) {
-
+	/*
+		Function to find the storage used by self at a peer
+		Arguments : peer id as string, bytes stored at all peers as a PeerStorageUse objects list
+		Returns : PeerStorageUse object and nil if peer is found, empty PeerStorageUse object and error if peer not found
+	*/
 	for _, peerStorageUse := range bytesAtPeers {
 		if peerStorageUse.NodeIP == peer {
 			return peerStorageUse, nil
@@ -103,6 +142,11 @@ func findPeerStorageUse(peer string, bytesAtPeers []PeerStorageUse) (PeerStorage
 }
 
 func calculateMaxAcceptableRatio(peer string, scores []NodeScore) float64 {
+	/*
+		Function to calculate the maximum acceptable ratio given a peer's score
+		Arguments : IP of peer as string, peer scores as NodeScore object list
+		Return : max acceptabel ratio as float64
+	*/
 	peerScore, err := fincPeerScore(peer, scores)
 	utils.ErrorHandler(err)
 
@@ -110,6 +154,10 @@ func calculateMaxAcceptableRatio(peer string, scores []NodeScore) float64 {
 }
 
 func fincPeerScore(peer string, scores []NodeScore) (NodeScore, error) {
+	/*
+		Function to find a peer's score
+		Arguments : IP of peer as string
+	*/
 	for _, peerInList := range scores {
 		if peerInList.NodeIP == peer {
 			return peerInList, nil
@@ -120,6 +168,11 @@ func fincPeerScore(peer string, scores []NodeScore) (NodeScore, error) {
 }
 
 func contactNodeForBarter(peer string, msg string) string {
+	/*
+		Function to setup tcp connection to contact node to barter ratio
+		Arguments : IP of peer as string, message to send as a string
+		Returns : string of the peer's response
+	*/
 	conn, err := net.Dial("tcp", peer+PORT)
 	utils.ErrorHandler(err)
 
