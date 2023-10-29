@@ -27,7 +27,7 @@ func main() {
 	// functions.Store(path, storage_pool, pending_requests)
 
 	bytesAtPeers = append(bytesAtPeers, bartering.PeerStorageUse{NodeIP: "127.0.0.1", StorageAtNode: 4000.0})
-	scores = append(scores, bartering.NodeScore{NodeIP: "127.0.0.1", Score: 100.0})
+	scores = append(scores, bartering.NodeScore{NodeIP: "127.0.0.1", Score: 1.0})
 
 	var wg sync.WaitGroup
 

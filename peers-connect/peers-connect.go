@@ -8,30 +8,30 @@ import (
 	"bartering/utils"
 )
 
-var PORT = "8081"
+// var PORT = "8081"
 
-var NodeStorageSpace = 400988.45 * 1000
+// var NodeStorageSpace = 400988.45 * 1000
 
-var bytesAtPeers = []bartering.PeerStorageUse{{NodeIP: "127.0.0.1", StorageAtNode: 400988.45}}
+// var bytesAtPeers = []bartering.PeerStorageUse{{NodeIP: "127.0.0.1", StorageAtNode: 400988.45}}
 
-var scores = []bartering.NodeScore{{NodeIP: "127.0.0.1", Score: 10.0}}
+// var scores = []bartering.NodeScore{{NodeIP: "127.0.0.1", Score: 10.0}}
 
-func ListenPeersRequestsTCP() {
+func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore) {
 	/*
 		TCP server to receive messages from peers
 	*/
-	listener, err := net.Listen("tcp", ":"+PORT)
+	listener, err := net.Listen("tcp", ":"+port)
 
 	utils.ErrorHandler(err)
 
 	defer listener.Close()
 	for {
 		conn, _ := listener.Accept()
-		go handleConnection(conn)
+		go handleConnection(conn, nodeStorage, bytesAtPeers, scores)
 	}
 }
 
-func handleConnection(conn net.Conn) {
+func handleConnection(conn net.Conn, nodeStorage float64, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore) {
 	/*
 		Connection handler for TCP connections received through the TCP server
 		Arguments : a connection as net.Conn
@@ -45,11 +45,11 @@ func handleConnection(conn net.Conn) {
 
 	fmt.Println("Recevied message : ", string(buffer))
 
-	MessageDiscriminator(buffer, conn)
+	MessageDiscriminator(buffer, conn, nodeStorage, bytesAtPeers, scores)
 
 }
 
-func MessageDiscriminator(buffer []byte, conn net.Conn) {
+func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore) {
 	/*
 		Function used to discriminate different types of messages and call the necessary functions for each type of messages
 		Arguments : a slide of bytes []byte
@@ -75,7 +75,7 @@ func MessageDiscriminator(buffer []byte, conn net.Conn) {
 
 		fmt.Println("Received bartering request from peer", ip)
 
-		bartering.RespondToBarterMsg(bufferString, ip, float64(NodeStorageSpace), bytesAtPeers, scores)
+		bartering.RespondToBarterMsg(bufferString, ip, nodeStorage, bytesAtPeers, scores, conn)
 
 	} else {
 		fmt.Println("Unrecognized message")

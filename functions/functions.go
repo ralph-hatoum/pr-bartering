@@ -8,6 +8,8 @@ import (
 	bootstrapconnect "bartering/bootstrap-connect"
 
 	"bartering/utils"
+
+	"bartering/bartering-api"
 )
 
 type StorageRequest struct {
@@ -19,7 +21,7 @@ type StorageRequest struct {
 	fileSize float64
 }
 
-func NodeStartup() ([]string, []StorageRequest, []StorageRequest, []string) {
+func NodeStartup() ([]string, []StorageRequest, []StorageRequest, []string, []bartering.PeerStorageUse, []bartering.NodeScore, []bartering.NodeRatio) {
 	/*
 		UNFINISHED
 		Function called upon a node's startup
@@ -27,6 +29,10 @@ func NodeStartup() ([]string, []StorageRequest, []StorageRequest, []string) {
 			- storagePool : list of CIDs of node's data
 			- pendingRequests : list of storage requests that are awaiting to be given to a peer in the network
 			- fulfilledRequests : requests accepted by other peers in the network
+			- peers : list of peers ids
+			- bytesAtPeers : list of bytes stored by other peers
+			- scores : list of scores attributed to each peer
+			- ratios : storage ratios for each peer
 
 		This function will call the bootstrap to retrieve peers' IP addresses, and store them in the peers list
 
@@ -42,7 +48,12 @@ func NodeStartup() ([]string, []StorageRequest, []StorageRequest, []string) {
 	fmt.Println("Creating peers list")
 	peers := bootstrapconnect.GetPeersFromBootstrapHTTP("127.0.0.1", "8080")
 
-	return storage_pool, pending_requests, fulfilled_requests, peers
+	fmt.Println("Creating bytes at peers list, scores and ratios")
+	bytesAtPeers := []bartering.PeerStorageUse{}
+	scores := []bartering.NodeScore{}
+	ratios := []bartering.NodeRatio{}
+
+	return storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, scores, ratios
 }
 
 func Store(path string, storage_pool []string, pending_requests []StorageRequest) {

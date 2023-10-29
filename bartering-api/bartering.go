@@ -8,6 +8,7 @@ import (
 	"net"
 	"strconv"
 	"sync"
+	"time"
 
 	// "bartering/functions"
 	"bartering/utils"
@@ -21,6 +22,11 @@ type NodeScore struct {
 type PeerStorageUse struct {
 	NodeIP        string
 	StorageAtNode float64
+}
+
+type NodeRatio struct {
+	NodeIP string
+	Ratio  float64
 }
 
 type StorageRequest struct {
@@ -44,35 +50,42 @@ var RatioIncreaseRate = 0.1
 
 var factorAcceptableRatio = 0.3
 
-var PORT = "8083"
+var PORT = "8082"
 
-var currentRatio float64
+// var currentRatio float64
 
-func InitiateBarter(peer string) {
+func InitiateBarter(peer string, ratios []NodeRatio) error {
 	/*
 		Function to barter the storage ratio
 		Arguments : IP of peer as string
 	*/
 
+	currentRatio, err := findNodeRatio(ratios, peer)
+
+	if err != nil {
+		return errors.New(err.Error())
+	}
+
 	newRatio := calculateNewRatio(currentRatio)
 
-	barterMessage := "BarReq" + strconv.FormatFloat(newRatio, 'f', -1, 64)
+	barterMessage := "BarRq" + strconv.FormatFloat(newRatio, 'f', -1, 64)
 
 	response := contactNodeForBarter(peer, barterMessage)
 
-	if response == "OK" {
+	if response == "OK\n" {
 		// update that ratio value
 		updateRatio(newRatio)
 	} else {
 		// in this case we have received a response to our barter message, we have to deal w it
-		ratio, err := strconv.ParseFloat(response, 64)
+		ratio, err := strconv.ParseFloat(response[:len(response)-1], 64)
 		utils.ErrorHandler(err)
-		shouldResponseRatioBeAccepted(ratio)
+		fmt.Println(shouldResponseRatioBeAccepted(ratio))
+		//update the ratio if needed
 	}
-
+	return nil
 }
 
-func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, bytesAtPeers []PeerStorageUse, scores []NodeScore) {
+func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, bytesAtPeers []PeerStorageUse, scores []NodeScore, conn net.Conn) {
 	/*
 		Function to answer a barter request
 		Arguments : message received as a string, the peer who sent it as a string, the storage space on the node as float64,
@@ -89,16 +102,53 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 	if shouldRatioBeAccepted(barterMsg_ratio, peer, storageSpace, bytesAtPeers, scores) {
 		// send "OK" to node
 		fmt.Println("New ratio is accepted -- sending OK to other peer")
+		_, err := io.WriteString(conn, "OK\n")
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println("Sent OK message to peer")
+		}
 	} else {
 		// formulate new ratio proposition
 		fmt.Println("New ratio should not be accepted -- sending another proposition to the peer")
 		newRatio := formulateBarterResponse(peer, scores, storageSpace, bytesAtPeers)
 		fmt.Println("New ratio :", newRatio)
+		// toSend := "BarAn" + fmt.Sprintf("%f", newRatio)
+		toSend := fmt.Sprintf("%f\n", newRatio)
+		_, err = io.WriteString(conn, toSend)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println("Sent to peer : " + toSend)
+		}
+
 	}
 
 }
 
+func findNodeRatio(ratios []NodeRatio, peer string) (float64, error) {
+	/*
+		Function to find a peer's current storage ratio
+		Arguments : list of NodeRatio objects, peer ip as string
+		Returns : storage ratio as float64 and nil if no error, 0 and error otherwise
+	*/
+
+	for _, nodeRatio := range ratios {
+		if nodeRatio.NodeIP == peer {
+			return nodeRatio.Ratio, nil
+		}
+	}
+
+	return NodeRatio{}.Ratio, errors.New("peer not found when looking for ratio")
+
+}
+
 func formulateBarterResponse(peer string, scores []NodeScore, storageSpace float64, bytesAtPeers []PeerStorageUse) float64 {
+	/*
+		Function to counter barter in case the other node's proposition is not acceptable
+		Arguments : peer id as string, list of NodeScore objects, node storage space as float64, list of PeerStorageUse objects
+		Returns : new ratio as float64
+	*/
 
 	maxPossible := calculateMaxAcceptableRatio(peer, scores, storageSpace, bytesAtPeers)
 	return maxPossible
@@ -165,7 +215,7 @@ func findPeerStorageUse(peer string, bytesAtPeers []PeerStorageUse) (PeerStorage
 		}
 	}
 
-	return PeerStorageUse{}, errors.New("Peer not found")
+	return PeerStorageUse{}, errors.New("peer not found")
 }
 
 func calculateMaxAcceptableRatio(peer string, scores []NodeScore, storageSpace float64, bytesAtPeers []PeerStorageUse) float64 {
@@ -201,7 +251,7 @@ func fincPeerScore(peer string, scores []NodeScore) (NodeScore, error) {
 		}
 
 	}
-	return NodeScore{}, errors.New("Peer not in peers list")
+	return NodeScore{}, errors.New("peer not in peers list")
 }
 
 func contactNodeForBarter(peer string, msg string) string {
@@ -210,17 +260,20 @@ func contactNodeForBarter(peer string, msg string) string {
 		Arguments : IP of peer as string, message to send as a string
 		Returns : string of the peer's response
 	*/
-	conn, err := net.Dial("tcp", peer+PORT)
+	conn, err := net.Dial("tcp", peer+":"+PORT)
 	utils.ErrorHandler(err)
 
 	defer conn.Close()
 
 	_, err = io.WriteString(conn, msg)
 
+	utils.ErrorHandler(err)
+	fmt.Println("barter message sent")
+	time.Sleep(2 * time.Second)
 	response := bufio.NewReader(conn)
-
+	fmt.Println("Response received!")
 	responseString, err := response.ReadString('\n')
-
+	fmt.Println(responseString)
 	utils.ErrorHandler(err)
 
 	return responseString
