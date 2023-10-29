@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"../utils"
+	"bartering/utils"
 )
 
 func UploadToIPFS(path string) string {
