@@ -13,12 +13,14 @@ func main() {
 	// storage_pool, pending_requests, fulfilled_storage, peers := functions.NodeStartup()
 	storage_pool, pending_requests, fulfilled_requests, peers := functions.NodeStartup()
 
-	var tolerance = 200
+	peers = append(peers, "127.0.0.1")
 
-	path := "test-data/test.txt"
+	// path := "test-data/test.txt"
 	fmt.Println(fulfilled_requests)
+	fmt.Println(storage_pool, pending_requests)
 	fmt.Println("Peers : ", peers)
-	functions.Store(path, storage_pool, pending_requests)
+	fmt.Println("Node started !")
+	// functions.Store(path, storage_pool, pending_requests)
 
 	var wg sync.WaitGroup // Import "sync" package to use WaitGroup.
 
@@ -30,12 +32,7 @@ func main() {
 		peersconnect.ListenPeersRequestsTCP()
 	}()
 
-
-
-
-
 	// Wait for the goroutine to finish.
 	wg.Wait()
-
 
 }

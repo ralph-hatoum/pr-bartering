@@ -4,10 +4,17 @@ import (
 	"fmt"
 	"net"
 
+	"../bartering-api"
 	"../utils"
 )
 
 var PORT = "8081"
+
+var NodeStorageSpace = 400988.45 * 1000
+
+var bytesAtPeers = []bartering.PeerStorageUse{{NodeIP: "127.0.0.1", StorageAtNode: 400988.45}}
+
+var scores = []bartering.NodeScore{{NodeIP: "127.0.0.1", Score: 10.0}}
 
 func ListenPeersRequestsTCP() {
 	/*
@@ -38,11 +45,11 @@ func handleConnection(conn net.Conn) {
 
 	fmt.Println("Recevied message : ", string(buffer))
 
-	messageDiscriminator(buffer)
+	messageDiscriminator(buffer, conn)
 
 }
 
-func messageDiscriminator(buffer []byte) {
+func messageDiscriminator(buffer []byte, conn net.Conn) {
 	/*
 		Function used to discriminate different types of messages and call the necessary functions for each type of messages
 		Arguments : a slide of bytes []byte
@@ -51,8 +58,25 @@ func messageDiscriminator(buffer []byte) {
 
 	messageType := bufferString[:5]
 
+	fmt.Println(messageType)
+
 	if messageType == "StoRq" {
+
 		handleStorageRequest(bufferString)
+
+	} else if messageType == "BarRq" {
+
+		// fmt.Println("Received bartering request")
+		// Maybe check if peer is known ???
+
+		remoteAddr := conn.RemoteAddr()
+		ip, _, err := net.SplitHostPort(remoteAddr.String())
+		utils.ErrorHandler(err)
+
+		fmt.Println("Received bartering request from peer", ip)
+
+		bartering.RespondToBarterMsg(bufferString, ip, float64(NodeStorageSpace), bytesAtPeers, scores)
+
 	} else {
 		fmt.Println("Unrecognized message")
 	}
