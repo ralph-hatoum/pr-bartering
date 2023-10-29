@@ -1,5 +1,7 @@
 package utils
 
+import "testing"
+
 // TODO write tests
 
 func TestErrorHandler(t *testing.T) {

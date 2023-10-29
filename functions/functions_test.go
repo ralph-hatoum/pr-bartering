@@ -1,7 +1,7 @@
 package functions
 
 import (
-	"../utils"
+	"bartering/utils"
 	"testing"
 )
 

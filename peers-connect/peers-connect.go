@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net"
 
-	"../bartering-api"
-	"../utils"
+	"bartering/bartering-api"
+	"bartering/utils"
 )
 
 var PORT = "8081"
@@ -45,11 +45,11 @@ func handleConnection(conn net.Conn) {
 
 	fmt.Println("Recevied message : ", string(buffer))
 
-	messageDiscriminator(buffer, conn)
+	MessageDiscriminator(buffer, conn)
 
 }
 
-func messageDiscriminator(buffer []byte, conn net.Conn) {
+func MessageDiscriminator(buffer []byte, conn net.Conn) {
 	/*
 		Function used to discriminate different types of messages and call the necessary functions for each type of messages
 		Arguments : a slide of bytes []byte

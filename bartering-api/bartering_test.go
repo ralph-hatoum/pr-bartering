@@ -1,5 +1,7 @@
 package bartering
 
+import "testing"
+
 // TODO Write tests
 
 func TestInitNodeScores(t *testing.T) {
@@ -22,7 +24,7 @@ func TestCheckEnoughSpace(t *testing.T) {
 
 }
 
-func TestDealWithRefusedRequest(t *testing.T){
+func TestDealWithRefusedRequest(t *testing.T) {
 
 }
 

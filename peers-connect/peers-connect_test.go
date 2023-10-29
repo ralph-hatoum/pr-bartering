@@ -3,6 +3,7 @@ package peersconnect
 import (
 	"bytes"
 	"io"
+	"net"
 	"os"
 	"testing"
 )
@@ -22,7 +23,9 @@ func TestMessageDiscriminator(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	messageDiscriminator(message)
+	rConn, _ := net.Pipe()
+
+	MessageDiscriminator(message, rConn)
 
 	w.Close()
 	os.Stdout = originalOutput

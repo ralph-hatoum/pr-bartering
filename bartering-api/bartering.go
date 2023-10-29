@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"sync"
 
-	// "../functions"
-	"../utils"
+	// "bartering/functions"
+	"bartering/utils"
 )
 
 type NodeScore struct {

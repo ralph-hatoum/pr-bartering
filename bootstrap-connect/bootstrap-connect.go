@@ -13,7 +13,7 @@ import (
 	"net"
 	"net/http"
 
-	"../utils"
+	"bartering/utils"
 )
 
 func GetPeersFromBootstrapTCP(IP string, port string) string {

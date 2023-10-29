@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"bartering/functions"
+
 	peersconnect "bartering/peers-connect"
 )
 

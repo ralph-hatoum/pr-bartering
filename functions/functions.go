@@ -3,11 +3,11 @@ package functions
 import (
 	"fmt"
 
-	api_ipfs "../api-ipfs"
+	api_ipfs "bartering/api-ipfs"
 
-	bootstrapconnect "../bootstrap-connect"
+	bootstrapconnect "bartering/bootstrap-connect"
 
-	"../utils"
+	"bartering/utils"
 )
 
 type StorageRequest struct {
