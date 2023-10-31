@@ -81,16 +81,6 @@ func Store(path string, storage_pool []string, pending_requests []StorageRequest
 	pending_requests = append(pending_requests, storage_request)
 
 	fmt.Println("Pending requests : ", pending_requests)
-
-	// Choose peers to propagate request to peersToPropagate :=
-
-	// Await answer
-
-	//
-
-	// propagateToPeers()
-
-	// TODO propagate to network
 }
 
 func createStorageRequestsLists() ([]string, []StorageRequest, []StorageRequest) {

@@ -60,7 +60,7 @@ func InitiateBarter(peer string, ratios []NodeRatio) error {
 		Arguments : IP of peer as string
 	*/
 
-	currentRatio, err := findNodeRatio(ratios, peer)
+	currentRatio, err := FindNodeRatio(ratios, peer)
 
 	if err != nil {
 		return errors.New(err.Error())
@@ -126,7 +126,7 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 
 }
 
-func findNodeRatio(ratios []NodeRatio, peer string) (float64, error) {
+func FindNodeRatio(ratios []NodeRatio, peer string) (float64, error) {
 	/*
 		Function to find a peer's current storage ratio
 		Arguments : list of NodeRatio objects, peer ip as string
@@ -225,7 +225,7 @@ func calculateMaxAcceptableRatio(peer string, scores []NodeScore, storageSpace f
 		Return : max acceptabel ratio as float64
 	*/
 
-	peerScore, err := fincPeerScore(peer, scores)
+	peerScore, err := findPeerScore(peer, scores)
 	utils.ErrorHandler(err)
 
 	ratio := factorAcceptableRatio * peerScore.Score
@@ -240,7 +240,7 @@ func calculateMaxAcceptableRatio(peer string, scores []NodeScore, storageSpace f
 	return ratio
 }
 
-func fincPeerScore(peer string, scores []NodeScore) (NodeScore, error) {
+func findPeerScore(peer string, scores []NodeScore) (NodeScore, error) {
 	/*
 		Function to find a peer's score
 		Arguments : IP of peer as string
@@ -292,68 +292,6 @@ func InitNodeScores(peers []string) []NodeScore {
 	}
 
 	return scores
-}
-
-func ElectStorageNodes(peerScores []NodeScore, numberOfNodes int) []string {
-	/*
-		Function to elect nodes to whom self will send storage requests
-		Arguments : IP of peer as string, number of nodes as int
-		Returns : list of strings containing IPs of nodes to contact
-	*/
-
-	// TODO change so we also elect low score nodes to give the opportunity to raise the score
-
-	electedNodesScores := []NodeScore{}
-	for _, peerScore := range peerScores {
-
-		if len(electedNodesScores) < numberOfNodes {
-
-			electedNodesScores = append(electedNodesScores, peerScore)
-
-		} else {
-			for index, currentlyElectedNode := range electedNodesScores {
-
-				if currentlyElectedNode.Score < peerScore.Score {
-					electedNodesScores[index] = peerScore
-					break
-				}
-			}
-		}
-
-	}
-
-	electedNodes := []string{}
-
-	for _, electedNodeScore := range electedNodesScores {
-		electedNodes = append(electedNodes, electedNodeScore.NodeIP)
-	}
-
-	return electedNodes
-}
-
-func CheckCIDValidity(storageRequest StorageRequest) {
-	/*
-		Check if : CID is valid and exists
-	*/
-}
-
-func CheckFileSizeValidity(storageRequest StorageRequest) {
-	/*
-		Check if fileSize announced in storage request is declared honestly
-	*/
-}
-
-func CheckEnoughSpace(storageRequest StorageRequest, currentStorageSpace float64) bool {
-	/*
-		Check if self has enough space to store the file
-		Arguments : storage request of type StorageRequest, current storage space used as float64
-		Returns : boolean
-	*/
-
-	if storageRequest.fileSize+float64(currentStorageSpace) < float64(NodeTotalStorageSpace) {
-		return true
-	}
-	return false
 }
 
 func dealWithRefusedRequest(storageRequest StorageRequest) {

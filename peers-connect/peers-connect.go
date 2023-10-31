@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"bartering/bartering-api"
+	storagerequests "bartering/storage-requests"
 	"bartering/utils"
 )
 
@@ -62,7 +63,7 @@ func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, byt
 
 	if messageType == "StoRq" {
 
-		handleStorageRequest(bufferString)
+		storagerequests.HandleStorageRequest(bufferString)
 
 	} else if messageType == "BarRq" {
 
@@ -80,17 +81,4 @@ func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, byt
 	} else {
 		fmt.Println("Unrecognized message")
 	}
-}
-
-func handleStorageRequest(bufferString string) {
-	/*
-		Function to handle a storage message type message
-		Arguments : buffer received through a tcp connection, as a string
-	*/
-
-	fmt.Println("Received storage request")
-	CID := bufferString[5:51]
-	fmt.Println("CID : ", CID)
-	fileSize := bufferString[51:]
-	fmt.Println("File Size : ", fileSize)
 }
