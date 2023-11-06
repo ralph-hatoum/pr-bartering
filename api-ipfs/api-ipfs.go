@@ -70,6 +70,12 @@ func UnpinIPFS(cid string) string {
 }
 
 func CatIPFS(cid string) string {
+	/*
+		To cat a file on IPFS (see content)
+		Arguments : CID (Content Identifier) of the file as a string
+		Returns : output of the unpin command as a string
+	*/
+
 	cmd := "ipfs"
 	cmdArgs := []string{"cat", cid}
 
