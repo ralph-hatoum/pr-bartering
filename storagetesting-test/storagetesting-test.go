@@ -1,11 +1,11 @@
 package main
 
 import (
-	storagetesting "bartering/storage-testing"
+	api_ipfs "bartering/api-ipfs"
 	"fmt"
 )
 
 func main() {
-	fmt.Println("Starting response receiver")
-	storagetesting.ContactPeerForTest("CID", "127.0.0.1")
+	// fmt.Println("Starting response receiver")
+	fmt.Println(api_ipfs.CatIPFS("QmV9tSDx9UiPeWExXEeH6aoDvmihvx6jD5eLb4jbTaKGps"))
 }
