@@ -68,3 +68,14 @@ func UnpinIPFS(cid string) string {
 
 	return string(cmdOutput)
 }
+
+func CatIPFS(cid string) string {
+	cmd := "ipfs"
+	cmdArgs := []string{"cat", cid}
+
+	cmdOutput, err := exec.Command(cmd, cmdArgs...).Output()
+
+	utils.ErrorHandler(err)
+
+	return string(cmdOutput)
+}

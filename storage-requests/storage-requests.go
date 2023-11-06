@@ -16,6 +16,11 @@ type StorageRequest struct {
 	fileSize float64
 }
 
+type FilesAtPeers struct {
+	Peer  string
+	Files []string
+}
+
 func makeStorageRequest() {
 
 }
@@ -42,8 +47,8 @@ func HandleStorageRequest(bufferString string) {
 }
 
 func checkRatioValidity(peer string, ratios []bartering.NodeRatio, bytesAtPeers []bartering.PeerStorageUse, storedFor []bartering.PeerStorageUse) {
-	ratio, err := bartering.FindNodeRatio(ratios, peer)
-	utils.ErrorHandler(err)
+	// ratio, err := bartering.FindNodeRatio(ratios, peer)
+	// utils.ErrorHandler(err)
 
 }
 
