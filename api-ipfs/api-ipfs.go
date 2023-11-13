@@ -5,6 +5,7 @@ Functions to interact with the IPFS Daemon
 */
 
 import (
+	"fmt"
 	"os/exec"
 	"strings"
 
@@ -75,13 +76,34 @@ func CatIPFS(cid string) string {
 		Arguments : CID (Content Identifier) of the file as a string
 		Returns : output of the unpin command as a string
 	*/
-
-	cmd := "ipfs"
-	cmdArgs := []string{"cat", cid}
+	fmt.Println("Calling cat command for CID", cid)
+	cmd := "/usr/local/bin/ipfs"
+	cmdArgs := []string{"cat", "--timeout=30s", cid}
 
 	cmdOutput, err := exec.Command(cmd, cmdArgs...).Output()
+
+	fmt.Println(cmdOutput)
 
 	utils.ErrorHandler(err)
 
 	return string(cmdOutput)
 }
+
+// func CatIPFS(cid string) string {
+// 	/*
+// 		To cat a file on IPFS (see content)
+// 		Arguments: CID (Content Identifier) of the file as a string
+// 		Returns: output of the unpin command as a string
+// 	*/
+// 	fmt.Println("Calling cat command for CID", cid)
+// 	apiURL := "http://localhost:5001/api/v0/cat/" + cid
+
+// 	resp, err := http.Get(apiURL)
+// 	utils.ErrorHandler(err)
+// 	defer resp.Body.Close()
+
+// 	body, err := ioutil.ReadAll(resp.Body)
+// 	utils.ErrorHandler(err)
+
+// 	return string(body)
+// }

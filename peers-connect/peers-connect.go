@@ -6,6 +6,7 @@ import (
 
 	"bartering/bartering-api"
 	storagerequests "bartering/storage-requests"
+	storagetesting "bartering/storage-testing"
 	"bartering/utils"
 )
 
@@ -73,6 +74,12 @@ func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, byt
 		fmt.Println("Received bartering request from peer", ip)
 
 		bartering.RespondToBarterMsg(bufferString, ip, nodeStorage, bytesAtPeers, scores, conn)
+
+	} else if messageType == "TesRq" {
+		fmt.Println("Recieved test request")
+		CID := bufferString[5 : len(bufferString)-1]
+		fmt.Println(CID)
+		storagetesting.HandleTest(CID, conn)
 
 	} else {
 		fmt.Println("Unrecognized message : ", bufferString)

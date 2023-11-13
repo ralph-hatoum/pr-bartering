@@ -55,8 +55,9 @@ func HandleTest(CID string, conn net.Conn) {
 		Function to perform tests upon recieving a test request
 		Arguments : CID as a string, connection as net.Conn
 	*/
-
+	fmt.Println("Computing proof for CID ", CID)
 	answer := computeExpectedAnswer(CID)
+	fmt.Println("Proof computed : ", answer)
 	buffer := []byte(answer)
 	conn.Write(buffer)
 
@@ -170,13 +171,13 @@ func findScoreVariation(variations []ScoreVariationScenario, scenario string) (f
 	return 0.0, errors.New("scenario " + scenario + " not found")
 }
 
-func computeExpectedAnswer(CID string) string {
+func computeExpectedAnswer(CID string) []byte {
 	/*
 		Given a CID, we compute the answer to a test (for now simple SHA256 hash but this will need to implement filecoin proof)
 		Arguments : CID of file as string
 		Returns : proof result as string
 	*/
-
+	CID = CID[:46]
 	contentString := api_ipfs.CatIPFS(CID)
 	contentBytes := []byte(contentString)
 	hasher := sha256.New()
@@ -184,7 +185,7 @@ func computeExpectedAnswer(CID string) string {
 	hasher.Write(contentBytes)
 	proofResult := hasher.Sum(nil)
 
-	return string(proofResult)
+	return proofResult
 }
 
 /* TODO : unifiy decrease and increase functions into a single update function, and
@@ -231,5 +232,5 @@ func checkAnswer(answer string, CID string) bool {
 	*/
 
 	expectedAnswer := computeExpectedAnswer(CID)
-	return expectedAnswer == answer
+	return string(expectedAnswer) == answer
 }
