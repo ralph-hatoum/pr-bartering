@@ -46,14 +46,30 @@ func NodeStartup() ([]string, []StorageRequest, []StorageRequest, []string, []ba
 	storage_pool, pending_requests, fulfilled_requests := createStorageRequestsLists()
 
 	fmt.Println("Creating peers list")
-	peers := bootstrapconnect.GetPeersFromBootstrapHTTP("127.0.0.1", "8080")
+	peers := bootstrapconnect.GetPeersFromBootstrapHTTP("127.0.0.1", "8082")
 
 	fmt.Println("Creating bytes at peers list, scores and ratios")
 	bytesAtPeers := []bartering.PeerStorageUse{}
-	scores := []bartering.NodeScore{}
-	ratios := []bartering.NodeRatio{}
+	scores := initiateScores(peers, 10.0)
+	ratios := initiateRatios(peers, 1.0)
 
 	return storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, scores, ratios
+}
+
+func initiateScores(peers []string, initialScore float64) []bartering.NodeScore {
+	scores := []bartering.NodeScore{}
+	for _, peer := range peers {
+		scores = append(scores, bartering.NodeScore{NodeIP: peer, Score: initialScore})
+	}
+	return scores
+}
+
+func initiateRatios(peers []string, initialRatio float64) []bartering.NodeRatio {
+	ratios := []bartering.NodeRatio{}
+	for _, peer := range peers {
+		ratios = append(ratios, bartering.NodeRatio{NodeIP: peer, Ratio: initialRatio})
+	}
+	return ratios
 }
 
 func Store(path string, storage_pool []string, pending_requests []StorageRequest) {

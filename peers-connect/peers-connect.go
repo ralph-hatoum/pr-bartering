@@ -44,8 +44,6 @@ func handleConnection(conn net.Conn, nodeStorage float64, bytesAtPeers []barteri
 
 	conn.Read(buffer)
 
-	fmt.Println("Recevied message : ", string(buffer))
-
 	MessageDiscriminator(buffer, conn, nodeStorage, bytesAtPeers, scores)
 
 }
@@ -59,15 +57,13 @@ func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, byt
 
 	messageType := bufferString[:5]
 
-	fmt.Println(messageType)
-
 	if messageType == "StoRq" {
 
 		storagerequests.HandleStorageRequest(bufferString)
 
 	} else if messageType == "BarRq" {
 
-		// fmt.Println("Received bartering request")
+		fmt.Println("Received bartering request")
 		// Maybe check if peer is known ???
 
 		remoteAddr := conn.RemoteAddr()
@@ -79,6 +75,6 @@ func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, byt
 		bartering.RespondToBarterMsg(bufferString, ip, nodeStorage, bytesAtPeers, scores, conn)
 
 	} else {
-		fmt.Println("Unrecognized message")
+		fmt.Println("Unrecognized message : ", bufferString)
 	}
 }

@@ -9,20 +9,25 @@ import (
 )
 
 var NodeStorage float64
-var port string
+var port = "8081"
 
 func main() {
 
 	// storage_pool, pending_requests, fulfilled_storage, peers := functions.NodeStartup()
-	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, scores, _ := functions.NodeStartup()
+	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, scores, ratios := functions.NodeStartup()
 
 	peers = append(peers, "127.0.0.1")
 
 	// path := "test-data/test.txt"
-	fmt.Println(fulfilled_requests)
-	fmt.Println(storage_pool, pending_requests)
+	fmt.Println("Fulfilled requests : ", fulfilled_requests)
+	fmt.Println("Storage pool : ", storage_pool)
+	fmt.Println("Pending requests : ", pending_requests)
 	fmt.Println("Peers : ", peers)
-	fmt.Println("Node started !")
+	fmt.Println("Scores : ", scores)
+	fmt.Println("Node ratios : ", ratios)
+	fmt.Println("")
+	fmt.Println("Node started ! Listening on port ", port)
+
 	// functions.Store(path, storage_pool, pending_requests)
 
 	var wg sync.WaitGroup // Import "sync" package to use WaitGroup.

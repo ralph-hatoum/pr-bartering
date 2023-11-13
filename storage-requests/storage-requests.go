@@ -1,10 +1,12 @@
 package storagerequests
 
 import (
+	api_ipfs "bartering/api-ipfs"
 	bartering "bartering/bartering-api"
 	"bartering/utils"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type StorageRequest struct {
@@ -41,6 +43,7 @@ func HandleStorageRequest(bufferString string) {
 	CID := bufferString[5:51]
 	fmt.Println("CID : ", CID)
 	fileSize := bufferString[51:]
+	fileSize = strings.Split(fileSize, "\n")[0]
 	fmt.Println("File Size : ", fileSize)
 
 	fileSizeFloat, err := strconv.ParseFloat(fileSize, 64)
@@ -48,7 +51,16 @@ func HandleStorageRequest(bufferString string) {
 
 	request := StorageRequest{fileSize: fileSizeFloat, CID: CID}
 
-	CheckRqValidity(request)
+	fmt.Println("Storage request : ", request, " ; checking validity ...")
+
+	if CheckRqValidity(request) {
+		fmt.Println("Request ", request, " valid, storing ! ")
+		fmt.Println("Pinning to IPFS ...")
+		api_ipfs.PinToIPFS(CID)
+		fmt.Println("File pinned to IPFS!")
+	} else {
+		fmt.Println("Request ", request, " not valid, not storing ! ")
+	}
 
 }
 

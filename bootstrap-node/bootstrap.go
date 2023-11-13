@@ -12,7 +12,7 @@ func main() {
 	fmt.Println("-- BOOTSTRAP NODE --")
 
 	address := "localhost"
-	port := "8080"
+	port := "8082"
 
 	fmt.Println("Listening on port ", port)
 
