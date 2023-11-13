@@ -16,6 +16,12 @@ type StorageRequest struct {
 	fileSize float64
 }
 
+type StorageRequestTimed struct {
+	CID             string
+	FileSize        float64
+	DurationMinutes int
+}
+
 type FilesAtPeers struct {
 	Peer  string
 	Files []string
