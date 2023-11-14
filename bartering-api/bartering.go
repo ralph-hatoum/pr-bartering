@@ -95,6 +95,7 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 	barterMsg_ratioRq := barterMsg[5:8]
 	fmt.Println("Ratio received : ", barterMsg_ratioRq)
 	barterMsg_ratio, err := strconv.ParseFloat(barterMsg_ratioRq, 64)
+	fmt.Println("conversion OK")
 	utils.ErrorHandler(err)
 
 	// shouldRatioBeAccepted(barterMsg_ratio, peer, storageSpace, bytesAtPeers, scores)
@@ -198,6 +199,7 @@ func isRatioTolerableGivenStorageSpace(peer string, ratio float64, storageSpace 
 	*/
 
 	peerStorageUse, err := findPeerStorageUse(peer, bytesAtPeers)
+
 	utils.ErrorHandler(err)
 
 	return peerStorageUse.StorageAtNode*ratio < storageSpace
@@ -209,6 +211,7 @@ func findPeerStorageUse(peer string, bytesAtPeers []PeerStorageUse) (PeerStorage
 		Arguments : peer id as string, bytes stored at all peers as a PeerStorageUse objects list
 		Returns : PeerStorageUse object and nil if peer is found, empty PeerStorageUse object and error if peer not found
 	*/
+
 	for _, peerStorageUse := range bytesAtPeers {
 		if peerStorageUse.NodeIP == peer {
 			return peerStorageUse, nil

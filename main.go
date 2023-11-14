@@ -16,9 +16,8 @@ func main() {
 	// storage_pool, pending_requests, fulfilled_storage, peers := functions.NodeStartup()
 	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, scores, ratios := functions.NodeStartup()
 
-	peers = append(peers, "127.0.0.1")
-
 	// path := "test-data/test.txt"
+	fmt.Println("Bytes at peers :", bytesAtPeers)
 	fmt.Println("Fulfilled requests : ", fulfilled_requests)
 	fmt.Println("Storage pool : ", storage_pool)
 	fmt.Println("Pending requests : ", pending_requests)

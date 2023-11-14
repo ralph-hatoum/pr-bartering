@@ -20,7 +20,7 @@ func main() {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("-- PEER CONNECTION -- HANDLING CONNECTION --")
-		peers := []string{"134.214.43.12", "134.214.43.13", "134.214.43.14", "134.214.43.15"}
+		peers := []string{"134.214.43.12", "134.214.43.13", "134.214.43.14", "134.214.43.15", "127.0.0.1"}
 		jsonResponse, err := json.Marshal(peers)
 		utils.ErrorHandler(err)
 

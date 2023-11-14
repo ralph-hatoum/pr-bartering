@@ -49,11 +49,19 @@ func NodeStartup() ([]string, []StorageRequest, []StorageRequest, []string, []ba
 	peers := bootstrapconnect.GetPeersFromBootstrapHTTP("127.0.0.1", "8082")
 
 	fmt.Println("Creating bytes at peers list, scores and ratios")
-	bytesAtPeers := []bartering.PeerStorageUse{}
+	bytesAtPeers := initiateBytesAtPeers(peers, 0.0)
 	scores := initiateScores(peers, 10.0)
 	ratios := initiateRatios(peers, 1.0)
 
 	return storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, scores, ratios
+}
+
+func initiateBytesAtPeers(peers []string, initialStorage float64) []bartering.PeerStorageUse {
+	bytesAtPeers := []bartering.PeerStorageUse{}
+	for _, peer := range peers {
+		bytesAtPeers = append(bytesAtPeers, bartering.PeerStorageUse{NodeIP: peer, StorageAtNode: initialStorage})
+	}
+	return bytesAtPeers
 }
 
 func initiateScores(peers []string, initialScore float64) []bartering.NodeScore {
