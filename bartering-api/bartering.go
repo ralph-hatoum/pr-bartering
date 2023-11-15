@@ -85,7 +85,7 @@ func InitiateBarter(peer string, ratios []NodeRatio) error {
 	return nil
 }
 
-func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, bytesAtPeers []PeerStorageUse, scores []NodeScore, conn net.Conn) {
+func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, bytesAtPeers []PeerStorageUse, scores []NodeScore, conn net.Conn, ratios []NodeRatio) {
 	/*
 		Function to answer a barter request
 		Arguments : message received as a string, the peer who sent it as a string, the storage space on the node as float64,
@@ -109,6 +109,11 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 		} else {
 			fmt.Println("Sent OK message to peer")
 		}
+		updatePeerRatio(ratios, peer, barterMsg_ratio)
+		currentRatio, err := FindNodeRatio(ratios, peer)
+		utils.ErrorHandler(err)
+		fmt.Println(currentRatio)
+
 	} else {
 		// formulate new ratio proposition
 		fmt.Println("New ratio should not be accepted -- sending another proposition to the peer")
@@ -125,6 +130,15 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 
 	}
 
+}
+
+func updatePeerRatio(ratios []NodeRatio, peer string, newRatio float64) {
+	// TODO FIX
+	for _, nodeRatio := range ratios {
+		if nodeRatio.NodeIP == peer {
+			nodeRatio.Ratio = newRatio
+		}
+	}
 }
 
 func FindNodeRatio(ratios []NodeRatio, peer string) (float64, error) {
@@ -177,7 +191,13 @@ func shouldRatioBeAccepted(ratio float64, peer string, storageSpace float64, byt
 		Returns : boolean
 	*/
 
-	return isRatioTolerableGivenStorageSpace(peer, ratio, storageSpace, bytesAtPeers) && (ratio < calculateMaxAcceptableRatio(peer, scores, storageSpace, bytesAtPeers))
+	currentStorage, err := findPeerStorageUse(peer, bytesAtPeers)
+	utils.ErrorHandler(err)
+	if currentStorage.StorageAtNode == 0.0 {
+		return true
+	}
+
+	return (isRatioTolerableGivenStorageSpace(peer, ratio, storageSpace, bytesAtPeers) && (ratio < calculateMaxAcceptableRatio(peer, scores, storageSpace, bytesAtPeers)))
 }
 
 func shouldResponseRatioBeAccepted(ratio float64) bool {
