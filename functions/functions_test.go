@@ -23,7 +23,14 @@ func TestInitiateBytesAtPeers(t *testing.T) {
 	}
 }
 
-// func TestListPrint(t *testing.T) {
-// 	list_to_test := []string{"hello", "hi"}
+func TestInitiateScores(t *testing.T) {
+	peers := []string{"peer1", "peer2"}
+	peerScore1 := bartering.NodeScore{NodeIP: "peer1", Score: 10.0}
+	peerScore2 := bartering.NodeScore{NodeIP: "peer2", Score: 10.0}
 
-// }
+	result := initiateScores(peers, 10.0)
+
+	if result[0] != peerScore1 || result[1] != peerScore2 {
+		t.Errorf("Scores not initiated correctly")
+	}
+}
