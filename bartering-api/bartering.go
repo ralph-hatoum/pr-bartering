@@ -74,7 +74,7 @@ func InitiateBarter(peer string, ratios []NodeRatio) error {
 
 	if response == "OK\n" {
 		// update that ratio value
-		updateRatio(newRatio)
+		updatePeerRatio(ratios, peer, newRatio)
 	} else {
 		// in this case we have received a response to our barter message, we have to deal w it
 		ratio, err := strconv.ParseFloat(response[:len(response)-1], 64)
@@ -133,10 +133,9 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 }
 
 func updatePeerRatio(ratios []NodeRatio, peer string, newRatio float64) {
-	// TODO FIX
-	for _, nodeRatio := range ratios {
+	for index, nodeRatio := range ratios {
 		if nodeRatio.NodeIP == peer {
-			nodeRatio.Ratio = newRatio
+			ratios[index].Ratio = newRatio
 		}
 	}
 }
@@ -177,10 +176,6 @@ func calculateNewRatio(ratio float64) float64 {
 	*/
 
 	return ratio * (1 + RatioIncreaseRate)
-}
-
-func updateRatio(ratio float64) {
-
 }
 
 func shouldRatioBeAccepted(ratio float64, peer string, storageSpace float64, bytesAtPeers []PeerStorageUse, scores []NodeScore) bool {

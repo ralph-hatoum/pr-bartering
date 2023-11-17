@@ -35,7 +35,7 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(PORT, NodeStorage, bytesAtPeers, scores)
+		peersconnect.ListenPeersRequestsTCP(PORT, NodeStorage, bytesAtPeers, scores, ratios)
 	}()
 
 	// Wait for the goroutine to finish.

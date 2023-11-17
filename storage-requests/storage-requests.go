@@ -4,6 +4,7 @@ import (
 	api_ipfs "bartering/api-ipfs"
 	bartering "bartering/bartering-api"
 	"bartering/utils"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -74,7 +75,7 @@ func watchPendingRequests() {
 
 }
 
-func ElectStorageNodes(peerScores []bartering.NodeScore, numberOfNodes int) []string {
+func ElectStorageNodes(peerScores []bartering.NodeScore, numberOfNodes int) ([]string, error) {
 	/*
 		Function to elect nodes to whom self will send storage requests
 		Arguments : IP of peer as string, number of nodes as int
@@ -82,6 +83,10 @@ func ElectStorageNodes(peerScores []bartering.NodeScore, numberOfNodes int) []st
 	*/
 
 	// TODO change so we also elect low score nodes to give the opportunity to raise the score
+
+	if numberOfNodes > len(peerScores) {
+		return []string{}, errors.New("asking for more peers than we know")
+	}
 
 	electedNodesScores := []bartering.NodeScore{}
 	for _, peerScore := range peerScores {
@@ -108,7 +113,7 @@ func ElectStorageNodes(peerScores []bartering.NodeScore, numberOfNodes int) []st
 		electedNodes = append(electedNodes, electedNodeScore.NodeIP)
 	}
 
-	return electedNodes
+	return electedNodes, nil
 }
 
 func CheckRqValidity(storageRequest StorageRequest) bool {
@@ -119,6 +124,9 @@ func CheckRqValidity(storageRequest StorageRequest) bool {
 func CheckCIDValidity(storageRequest StorageRequest) bool {
 	/*
 		Check if : CID is valid and exists
+		problem : ipfs cat with wrong CID goes through ipfs search which can be very long
+		no efficient way to check if CID exists
+		however if we work under the hypothesis that peers in our network have preestablished ipfs links
 	*/
 	return true
 }

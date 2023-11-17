@@ -6,6 +6,8 @@ import (
 
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
+	storagerequests "bartering/storage-requests"
+	"bartering/utils"
 )
 
 var NodeStorage float64
@@ -37,6 +39,10 @@ func main() {
 		defer wg.Done()
 		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratios)
 	}()
+
+	to_request, err := storagerequests.ElectStorageNodes(scores, 3)
+	utils.ErrorHandler(err)
+	fmt.Println(to_request)
 
 	// Wait for the goroutine to finish.
 	wg.Wait()

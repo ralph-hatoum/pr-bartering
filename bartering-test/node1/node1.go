@@ -40,7 +40,7 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(PORT, NodeStorage, bytesAtPeers, scores)
+		peersconnect.ListenPeersRequestsTCP(PORT, NodeStorage, bytesAtPeers, scores, ratios)
 	}()
 
 	err := bartering.InitiateBarter("127.0.0.1", ratios)
