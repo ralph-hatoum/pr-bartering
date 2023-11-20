@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	api_ipfs "bartering/api-ipfs"
+	storagerequests "bartering/storage-requests"
 
 	bootstrapconnect "bartering/bootstrap-connect"
 
@@ -124,19 +125,11 @@ func createStorageRequestsLists() ([]string, []StorageRequest, []StorageRequest)
 
 }
 
-func propagateToPeers(storageRequest StorageRequest) {
-	messageToPropagate := buildStorageRequestMessage(storageRequest)
+func propagateToPeers(storageRequest storagerequests.StorageRequest) {
+	messageToPropagate := storagerequests.BuildStorageRequestMessage(storageRequest)
 	fmt.Println(messageToPropagate)
 
 	// Choose peers to propagate to
 	// send request, await accept ?
 	// If refuse or no answer, make better offer ?
-}
-
-func buildStorageRequestMessage(storageRequest StorageRequest) string {
-
-	fileSizeString := fmt.Sprintf("%.*f", 10, storageRequest.fileSize)
-	storageRequestMessage := "StoReq" + storageRequest.CID + fileSizeString
-
-	return storageRequestMessage
 }

@@ -34,3 +34,5 @@ func TestInitiateScores(t *testing.T) {
 		t.Errorf("Scores not initiated correctly")
 	}
 }
+
+

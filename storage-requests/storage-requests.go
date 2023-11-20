@@ -4,11 +4,16 @@ import (
 	api_ipfs "bartering/api-ipfs"
 	bartering "bartering/bartering-api"
 	"bartering/utils"
+	"bufio"
 	"errors"
 	"fmt"
+	"io"
+	"net"
 	"strconv"
 	"strings"
 )
+
+var SCORE_DECREASE_REFUSED_STO_REQ = 0.8
 
 type StorageRequest struct {
 	/*
@@ -16,7 +21,7 @@ type StorageRequest struct {
 	*/
 
 	CID      string
-	fileSize float64
+	FileSize float64
 }
 
 type StorageRequestTimed struct {
@@ -30,16 +35,70 @@ type FilesAtPeers struct {
 	Files []string
 }
 
+func BuildStorageRequestMessage(storageRequest StorageRequest) string {
+
+	fileSizeString := fmt.Sprintf("%.*f", 10, storageRequest.FileSize)
+	storageRequestMessage := "StoRq" + storageRequest.CID + fileSizeString
+
+	return storageRequestMessage
+}
+
 func makeStorageRequest() {
 
 }
 
-func HandleStorageRequest(bufferString string) {
+func RequestStorageFromPeer(peer string, storageRequest StorageRequest, port string, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore) {
+
+	storageRqMessage := BuildStorageRequestMessage(storageRequest)
+
+	conn, err := net.Dial("tcp", peer+":"+port)
+
+	utils.ErrorHandler(err)
+
+	_, err = io.WriteString(conn, storageRqMessage)
+
+	utils.ErrorHandler(err)
+
+	response := bufio.NewReader(conn)
+
+	responseString, err := response.ReadString('\n')
+
+	utils.ErrorHandler(err)
+	fmt.Println(responseString)
+
+	if responseString == "OK\n" {
+		fmt.Println("Peer ", peer, " stored file with CID ", storageRequest.CID, " successfully.")
+		// TODO add request to all requeied data structures and intitiate tests
+		updateBytesAtPeers(bytesAtPeers, peer, storageRequest)
+		// TODO add request to fulfilled requests
+	} else if responseString == "KO\n" {
+		fmt.Println("Storage refused by node, decreasing score")
+		updatePeerScore(scores, peer)
+	}
+}
+
+func updatePeerScore(scores []bartering.NodeScore, peer string) {
+	for index, peerScore := range scores {
+		if peerScore.NodeIP == peer {
+			scores[index].Score -= SCORE_DECREASE_REFUSED_STO_REQ
+		}
+	}
+}
+
+func updateBytesAtPeers(bytesAtPeers []bartering.PeerStorageUse, peer string, storageRequest StorageRequest) {
+	for index, bytesAtPeer := range bytesAtPeers {
+		if bytesAtPeer.NodeIP == peer {
+			bytesAtPeers[index].StorageAtNode += storageRequest.FileSize
+		}
+	}
+}
+
+func HandleStorageRequest(bufferString string, conn net.Conn) {
 	/*
 		Function to handle a storage message type message
 		Arguments : buffer received through a tcp connection, as a string
 	*/
-
+	var messageToPeer string
 	fmt.Println("Received storage request")
 	CID := bufferString[5:51]
 	fmt.Println("CID : ", CID)
@@ -50,7 +109,7 @@ func HandleStorageRequest(bufferString string) {
 	fileSizeFloat, err := strconv.ParseFloat(fileSize, 64)
 	utils.ErrorHandler(err)
 
-	request := StorageRequest{fileSize: fileSizeFloat, CID: CID}
+	request := StorageRequest{FileSize: fileSizeFloat, CID: CID}
 
 	fmt.Println("Storage request : ", request, " ; checking validity ...")
 
@@ -59,9 +118,16 @@ func HandleStorageRequest(bufferString string) {
 		fmt.Println("Pinning to IPFS ...")
 		api_ipfs.PinToIPFS(CID)
 		fmt.Println("File pinned to IPFS!")
+		messageToPeer = "OK\n"
 	} else {
 		fmt.Println("Request ", request, " not valid, not storing ! ")
+
+		messageToPeer = "KO\n"
 	}
+
+	_, err = io.WriteString(conn, messageToPeer)
+
+	utils.ErrorHandler(err)
 
 }
 
@@ -118,7 +184,7 @@ func ElectStorageNodes(peerScores []bartering.NodeScore, numberOfNodes int) ([]s
 
 func CheckRqValidity(storageRequest StorageRequest) bool {
 
-	return true
+	return false
 }
 
 func CheckCIDValidity(storageRequest StorageRequest) bool {
@@ -145,6 +211,6 @@ func CheckEnoughSpace(storageRequest StorageRequest, currentStorageSpace float64
 		Returns : boolean
 	*/
 
-	return storageRequest.fileSize+float64(currentStorageSpace) < NodeTotalStorageSpace
+	return storageRequest.FileSize+float64(currentStorageSpace) < NodeTotalStorageSpace
 
 }

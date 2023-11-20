@@ -60,7 +60,7 @@ func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, byt
 
 	if messageType == "StoRq" {
 
-		storagerequests.HandleStorageRequest(bufferString)
+		storagerequests.HandleStorageRequest(bufferString, conn)
 
 	} else if messageType == "BarRq" {
 
