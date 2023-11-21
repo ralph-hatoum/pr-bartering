@@ -22,7 +22,7 @@ type StorageRequest struct {
 	fileSize float64
 }
 
-func NodeStartup() ([]string, []StorageRequest, []storagerequests.FulfilledRequest, []string, []bartering.PeerStorageUse, []bartering.PeerStorageUse, []bartering.NodeScore, []bartering.NodeRatio, []bartering.NodeRatio) {
+func NodeStartup() ([]string, []StorageRequest, []storagerequests.FulfilledRequest, []string, []bartering.PeerStorageUse, []bartering.PeerStorageUse, []bartering.NodeScore, []bartering.NodeRatio, []bartering.NodeRatio, []storagerequests.FulfilledRequest) {
 	/*
 		UNFINISHED
 		Function called upon a node's startup
@@ -58,7 +58,9 @@ func NodeStartup() ([]string, []StorageRequest, []storagerequests.FulfilledReque
 	ratiosForPeers := initiateRatios(peers, 1.0)
 	ratiosAtPeers := initiateRatios(peers, 1.0)
 
-	return storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers
+	storedForPeers := []storagerequests.FulfilledRequest{}
+
+	return storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers
 }
 
 func initiatePeerStorageUseArray(peers []string, initialStorage float64) []bartering.PeerStorageUse {

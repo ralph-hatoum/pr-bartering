@@ -116,11 +116,20 @@ func updateBytesAtPeers(bytesAtPeers []bartering.PeerStorageUse, peer string, st
 	}
 }
 
-func HandleStorageRequest(bufferString string, conn net.Conn) {
+func updateBytesForPeers(bytesForPeers []bartering.PeerStorageUse, peer string, fileSize float64) {
+	for index, bytesForPeer := range bytesForPeers {
+		if bytesForPeer.NodeIP == peer {
+			bytesForPeers[index].StorageAtNode += fileSize
+		}
+	}
+}
+
+func HandleStorageRequest(bufferString string, conn net.Conn, bytesForPeers []bartering.PeerStorageUse, storedForPeers *[]FulfilledRequest) {
 	/*
 		Function to handle a storage message type message
 		Arguments : buffer received through a tcp connection, as a string
 	*/
+	peer := conn.RemoteAddr().(*net.TCPAddr).IP.String()
 	var messageToPeer string
 	fmt.Println("Received storage request")
 	CID := bufferString[5:51]
@@ -142,6 +151,9 @@ func HandleStorageRequest(bufferString string, conn net.Conn) {
 		api_ipfs.PinToIPFS(CID)
 		fmt.Println("File pinned to IPFS!")
 		messageToPeer = "OK\n"
+		updateBytesForPeers(bytesForPeers, peer, fileSizeFloat)
+		updateFulfilledRequests(CID, peer, storedForPeers)
+		fmt.Println("stored for peers : ", storedForPeers)
 	} else {
 		fmt.Println("Request ", request, " not valid, not storing ! ")
 

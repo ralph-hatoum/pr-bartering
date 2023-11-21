@@ -16,7 +16,7 @@ var NodeStorage = 400000000.0
 func main() {
 
 	// storage_pool, pending_requests, fulfilled_storage, peers := functions.NodeStartup()
-	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers := functions.NodeStartup()
+	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers := functions.NodeStartup()
 
 	// path := "test-data/test.txt"
 	fmt.Println("Bytes at peers :", bytesAtPeers)
@@ -40,7 +40,7 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(PORT, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers)
+		peersconnect.ListenPeersRequestsTCP(PORT, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers)
 	}()
 
 	// Wait for the goroutine to finish.

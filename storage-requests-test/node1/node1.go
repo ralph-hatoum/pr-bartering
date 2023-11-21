@@ -15,7 +15,7 @@ var port = "8083"
 func main() {
 
 	// storage_pool, pending_requests, fulfilled_storage, peers := functions.NodeStartup()
-	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers := functions.NodeStartup()
+	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers := functions.NodeStartup()
 
 	// path := "test-data/test.txt"
 	fmt.Println("Bytes at peers :", bytesAtPeers)
@@ -38,7 +38,7 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers)
+		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers)
 	}()
 
 	stoRq := storagerequests.StorageRequest{CID: "QmV9tSDx9UiPeWExXEeH6aoDvmihvx6jD5eLb4jbTaKGps", FileSize: 5.0}
@@ -46,7 +46,7 @@ func main() {
 	storagerequests.RequestStorageFromPeer("127.0.0.1", stoRq, "8084", bytesAtPeers, scores, &fulfilled_requests)
 	fmt.Println(bytesAtPeers)
 	fmt.Println(scores)
-	fmt.Println(fulfilled_requests)
+	fmt.Println("fulfilled requests :", fulfilled_requests)
 	// Wait for the goroutine to finish.
 	wg.Wait()
 
