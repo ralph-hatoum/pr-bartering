@@ -43,9 +43,10 @@ func main() {
 
 	stoRq := storagerequests.StorageRequest{CID: "QmV9tSDx9UiPeWExXEeH6aoDvmihvx6jD5eLb4jbTaKGps", FileSize: 5.0}
 
-	storagerequests.RequestStorageFromPeer("127.0.0.1", stoRq, "8084", bytesAtPeers, scores)
+	storagerequests.RequestStorageFromPeer("127.0.0.1", stoRq, "8084", bytesAtPeers, scores, &fulfilled_requests)
 	fmt.Println(bytesAtPeers)
 	fmt.Println(scores)
+	fmt.Println(fulfilled_requests)
 	// Wait for the goroutine to finish.
 	wg.Wait()
 

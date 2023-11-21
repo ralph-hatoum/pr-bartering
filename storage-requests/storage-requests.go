@@ -52,7 +52,26 @@ func makeStorageRequest() {
 
 }
 
-func RequestStorageFromPeer(peer string, storageRequest StorageRequest, port string, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore) {
+func buildFulfilledRequestObject(CID string, peer string) FulfilledRequest {
+
+	fulfilledRequest := FulfilledRequest{CID: CID, Peer: peer}
+
+	return fulfilledRequest
+}
+
+func addFulFilledRequestToFulfilledRequests(request FulfilledRequest, requests *[]FulfilledRequest) {
+	*requests = append(*requests, request)
+}
+
+func updateFulfilledRequests(CID string, peer string, fulfilledRequests *[]FulfilledRequest) {
+
+	newRequest := buildFulfilledRequestObject(CID, peer)
+
+	addFulFilledRequestToFulfilledRequests(newRequest, fulfilledRequests)
+
+}
+
+func RequestStorageFromPeer(peer string, storageRequest StorageRequest, port string, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore, fulfilledRequests *[]FulfilledRequest) {
 
 	storageRqMessage := BuildStorageRequestMessage(storageRequest)
 
@@ -73,9 +92,8 @@ func RequestStorageFromPeer(peer string, storageRequest StorageRequest, port str
 
 	if responseString == "OK\n" {
 		fmt.Println("Peer ", peer, " stored file with CID ", storageRequest.CID, " successfully.")
-		// TODO add request to all requeied data structures and intitiate tests
 		updateBytesAtPeers(bytesAtPeers, peer, storageRequest)
-		// TODO add request to fulfilled requests
+		updateFulfilledRequests(storageRequest.CID, peer, fulfilledRequests)
 	} else if responseString == "KO\n" {
 		fmt.Println("Storage refused by node, decreasing score")
 		updatePeerScore(scores, peer)
@@ -189,7 +207,7 @@ func ElectStorageNodes(peerScores []bartering.NodeScore, numberOfNodes int) ([]s
 
 func CheckRqValidity(storageRequest StorageRequest) bool {
 
-	return false
+	return true
 }
 
 func CheckCIDValidity(storageRequest StorageRequest) bool {
