@@ -18,7 +18,7 @@ import (
 
 // var scores = []bartering.NodeScore{{NodeIP: "127.0.0.1", Score: 10.0}}
 
-func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore, ratios []bartering.NodeRatio) {
+func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore, ratiosAtPeers []bartering.NodeRatio, ratiosForPeers []bartering.NodeRatio) {
 	/*
 		TCP server to receive messages from peers
 	*/
@@ -29,7 +29,7 @@ func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []bar
 	defer listener.Close()
 	for {
 		conn, _ := listener.Accept()
-		go handleConnection(conn, nodeStorage, bytesAtPeers, scores, ratios)
+		go handleConnection(conn, nodeStorage, bytesAtPeers, scores, ratiosAtPeers)
 	}
 }
 

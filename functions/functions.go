@@ -22,7 +22,7 @@ type StorageRequest struct {
 	fileSize float64
 }
 
-func NodeStartup() ([]string, []StorageRequest, []StorageRequest, []string, []bartering.PeerStorageUse, []bartering.NodeScore, []bartering.NodeRatio) {
+func NodeStartup() ([]string, []StorageRequest, []StorageRequest, []string, []bartering.PeerStorageUse, []bartering.PeerStorageUse, []bartering.NodeScore, []bartering.NodeRatio, []bartering.NodeRatio) {
 	/*
 		UNFINISHED
 		Function called upon a node's startup
@@ -50,14 +50,16 @@ func NodeStartup() ([]string, []StorageRequest, []StorageRequest, []string, []ba
 	peers := bootstrapconnect.GetPeersFromBootstrapHTTP("127.0.0.1", "8082")
 
 	fmt.Println("Creating bytes at peers list, scores and ratios")
-	bytesAtPeers := initiateBytesAtPeers(peers, 0.0)
+	bytesAtPeers := initiatePeerStorageUseArray(peers, 0.0)
+	bytesForPeers := initiatePeerStorageUseArray(peers, 0.0)
 	scores := initiateScores(peers, 10.0)
-	ratios := initiateRatios(peers, 1.0)
+	ratiosForPeers := initiateRatios(peers, 1.0)
+	ratiosAtPeers := initiateRatios(peers, 1.0)
 
-	return storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, scores, ratios
+	return storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers
 }
 
-func initiateBytesAtPeers(peers []string, initialStorage float64) []bartering.PeerStorageUse {
+func initiatePeerStorageUseArray(peers []string, initialStorage float64) []bartering.PeerStorageUse {
 	bytesAtPeers := []bartering.PeerStorageUse{}
 	for _, peer := range peers {
 		bytesAtPeers = append(bytesAtPeers, bartering.PeerStorageUse{NodeIP: peer, StorageAtNode: initialStorage})
