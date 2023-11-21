@@ -15,6 +15,11 @@ import (
 
 var SCORE_DECREASE_REFUSED_STO_REQ = 0.8
 
+type FulfilledRequest struct {
+	CID  string
+	Peer string
+}
+
 type StorageRequest struct {
 	/*
 		Data structure to represent storage requests ; consist of the CID of a file and its size

@@ -22,7 +22,7 @@ type StorageRequest struct {
 	fileSize float64
 }
 
-func NodeStartup() ([]string, []StorageRequest, []StorageRequest, []string, []bartering.PeerStorageUse, []bartering.PeerStorageUse, []bartering.NodeScore, []bartering.NodeRatio, []bartering.NodeRatio) {
+func NodeStartup() ([]string, []StorageRequest, []storagerequests.FulfilledRequest, []string, []bartering.PeerStorageUse, []bartering.PeerStorageUse, []bartering.NodeScore, []bartering.NodeRatio, []bartering.NodeRatio) {
 	/*
 		UNFINISHED
 		Function called upon a node's startup
@@ -44,7 +44,9 @@ func NodeStartup() ([]string, []StorageRequest, []StorageRequest, []string, []ba
 	fmt.Println("Starting node")
 
 	fmt.Println("Creating storage pool and requests lists")
-	storage_pool, pending_requests, fulfilled_requests := createStorageRequestsLists()
+	storage_pool, pending_requests, _ := createStorageRequestsLists()
+
+	fulfilled_requests := []storagerequests.FulfilledRequest{}
 
 	fmt.Println("Creating peers list")
 	peers := bootstrapconnect.GetPeersFromBootstrapHTTP("127.0.0.1", "8082")
