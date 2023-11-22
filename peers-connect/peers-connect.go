@@ -24,6 +24,8 @@ func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []bar
 	*/
 	listener, err := net.Listen("tcp", ":"+port)
 
+	fmt.Println(ratiosForPeers)
+
 	utils.ErrorHandler(err)
 
 	defer listener.Close()

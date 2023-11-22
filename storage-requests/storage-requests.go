@@ -48,9 +48,9 @@ func BuildStorageRequestMessage(storageRequest StorageRequest) string {
 	return storageRequestMessage
 }
 
-func makeStorageRequest() {
+// func makeStorageRequest() {
 
-}
+// }
 
 func buildFulfilledRequestObject(CID string, peer string) FulfilledRequest {
 
@@ -166,15 +166,15 @@ func HandleStorageRequest(bufferString string, conn net.Conn, bytesForPeers []ba
 
 }
 
-func checkRatioValidity(peer string, ratios []bartering.NodeRatio, bytesAtPeers []bartering.PeerStorageUse, storedFor []bartering.PeerStorageUse) {
-	// ratio, err := bartering.FindNodeRatio(ratios, peer)
-	// utils.ErrorHandler(err)
+// func checkRatioValidity(peer string, ratios []bartering.NodeRatio, bytesAtPeers []bartering.PeerStorageUse, storedFor []bartering.PeerStorageUse) {
+// 	// ratio, err := bartering.FindNodeRatio(ratios, peer)
+// 	// utils.ErrorHandler(err)
 
-}
+// }
 
-func watchPendingRequests() {
+// func watchPendingRequests() {
 
-}
+// }
 
 func ElectStorageNodes(peerScores []bartering.NodeScore, numberOfNodes int) ([]string, error) {
 	/*

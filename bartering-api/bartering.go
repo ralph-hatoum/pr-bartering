@@ -98,10 +98,7 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 	fmt.Println("conversion OK")
 	utils.ErrorHandler(err)
 
-	// shouldRatioBeAccepted(barterMsg_ratio, peer, storageSpace, bytesAtPeers, scores)
-
 	if shouldRatioBeAccepted(barterMsg_ratio, peer, storageSpace, bytesAtPeers, scores) {
-		// send "OK" to node
 		fmt.Println("New ratio is accepted -- sending OK to other peer")
 		_, err := io.WriteString(conn, "OK\n")
 		if err != nil {

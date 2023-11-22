@@ -94,8 +94,9 @@ func ContactPeerForTest(CID string, peer string, scores []bartering.NodeScore) {
 	case response := <-responseChannel:
 		fmt.Println("Response received.")
 		// Here, response was received, it should be checked if the response is correct or wrong to decide how score should evolve
-		fmt.Println(response)
+		// fmt.Println(response)
 		if checkAnswer(response, CID) {
+			fmt.Println("score should be increased")
 			increaseScore(peer, "passedTest", scores)
 		} else {
 			decreaseScore(peer, "failedTestWrongAns", scores)
@@ -217,9 +218,9 @@ func increaseScore(peer string, scenario string, scores []bartering.NodeScore) {
 	increaseAmount, err := findScoreVariation(IncreasingBehavior, scenario)
 	utils.ErrorHandler(err)
 
-	for _, peerScore := range scores {
+	for index, peerScore := range scores {
 		if peerScore.NodeIP == peer {
-			peerScore.Score += increaseAmount
+			scores[index].Score += increaseAmount
 		}
 	}
 
