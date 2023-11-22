@@ -17,6 +17,7 @@ import (
 )
 
 func GetPeersFromBootstrapTCP(IP string, port string) string {
+
 	/*
 		Function to get peers from the bootstrap node via TCP
 		Arguments : IP of bootsrap as string, port as string
@@ -34,8 +35,6 @@ func GetPeersFromBootstrapTCP(IP string, port string) string {
 	_, err = io.WriteString(conn, messageToBootstrap)
 	utils.ErrorHandler(err)
 
-	fmt.Println("Called bootstrap, awaiting response")
-
 	boostrapResponseReader := bufio.NewReader(conn)
 
 	boostrapResponse, err := boostrapResponseReader.ReadString('\n')
@@ -45,6 +44,7 @@ func GetPeersFromBootstrapTCP(IP string, port string) string {
 }
 
 func GetPeersFromBootstrapHTTP(IP string, port string) []string {
+
 	/*
 		Function to get peers from the bootstrap node via HTTP
 		Arguments : IP of bootsrap as string, port as string
@@ -77,6 +77,7 @@ func GetPeersFromBootstrapHTTP(IP string, port string) []string {
 }
 
 func AnnounceSelfToBootstrap(IP string, port string) {
+
 	/*
 		Function to call the bootstrap to annouce self and add IP to the IPs that will be announced by the bootstrap
 		Arguments : IP as string, port as string
