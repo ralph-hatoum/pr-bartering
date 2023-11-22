@@ -8,7 +8,13 @@ import (
 	"bartering/utils"
 )
 
+/*
+	Code for bootstrap node - here a simple HTTP server
+	On 8082, bootstrap returns a list of peers as a list of ip addresses as strings
+*/
+
 func main() {
+
 	fmt.Println("-- BOOTSTRAP NODE --")
 
 	address := "localhost"
@@ -27,8 +33,10 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonResponse)
+
 		fmt.Println("-- PEER CONNECTION HANDLED SUCCESFULLY --")
 	})
+
 	err := http.ListenAndServe(serverAddress, nil)
 	utils.ErrorHandler(err)
 
