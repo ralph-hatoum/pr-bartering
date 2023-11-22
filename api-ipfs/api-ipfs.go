@@ -88,22 +88,3 @@ func CatIPFS(cid string) string {
 
 	return string(cmdOutput)
 }
-
-// func CatIPFS(cid string) string {
-// 	/*
-// 		To cat a file on IPFS (see content)
-// 		Arguments: CID (Content Identifier) of the file as a string
-// 		Returns: output of the unpin command as a string
-// 	*/
-// 	fmt.Println("Calling cat command for CID", cid)
-// 	apiURL := "http://localhost:5001/api/v0/cat/" + cid
-
-// 	resp, err := http.Get(apiURL)
-// 	utils.ErrorHandler(err)
-// 	defer resp.Body.Close()
-
-// 	body, err := ioutil.ReadAll(resp.Body)
-// 	utils.ErrorHandler(err)
-
-// 	return string(body)
-// }
