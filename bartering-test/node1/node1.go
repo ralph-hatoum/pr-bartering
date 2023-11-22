@@ -17,7 +17,6 @@ var NodeStorage = 400000000.0
 
 func main() {
 
-	// storage_pool, pending_requests, fulfilled_storage, peers := functions.NodeStartup()
 	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers := functions.NodeStartup()
 
 	// path := "test-data/test.txt"
@@ -35,11 +34,6 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	// Adding 127.0.0.1 to all lists for the barter test
-	bytesAtPeers = append(bytesAtPeers, bartering.PeerStorageUse{NodeIP: "127.0.0.1", StorageAtNode: 4000.0})
-	scores = append(scores, bartering.NodeScore{NodeIP: "127.0.0.1", Score: 100.0})
-	ratiosAtPeers = append(ratiosAtPeers, bartering.NodeRatio{NodeIP: "127.0.0.1", Ratio: 1.0})
-
 	wg.Add(1)
 
 	go func() {
@@ -54,7 +48,6 @@ func main() {
 		fmt.Println("Bartering request failed")
 	}
 
-	// Wait for the goroutine to finish.
 	wg.Wait()
 
 }
