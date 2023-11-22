@@ -9,7 +9,7 @@ import (
 	peersconnect "bartering/peers-connect"
 )
 
-var PORT = "8082"
+var PORT = "8084"
 
 var NodeStorage = 400000000.0
 

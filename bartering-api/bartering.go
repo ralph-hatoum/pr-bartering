@@ -50,7 +50,7 @@ var RatioIncreaseRate = 0.1
 
 var factorAcceptableRatio = 0.3
 
-var PORT = "8082"
+var PORT = "8084"
 
 // var currentRatio float64
 
@@ -79,8 +79,7 @@ func InitiateBarter(peer string, ratios []NodeRatio) error {
 		// in this case we have received a response to our barter message, we have to deal w it
 		ratio, err := strconv.ParseFloat(response[:len(response)-1], 64)
 		utils.ErrorHandler(err)
-		fmt.Println(shouldResponseRatioBeAccepted(ratio))
-		//update the ratio if needed
+		updatePeerRatio(ratios, peer, ratio)
 	}
 	return nil
 }
@@ -107,9 +106,7 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 			fmt.Println("Sent OK message to peer")
 		}
 		updatePeerRatio(ratios, peer, barterMsg_ratio)
-		currentRatio, err := FindNodeRatio(ratios, peer)
-		utils.ErrorHandler(err)
-		fmt.Println(currentRatio)
+		fmt.Println(ratios)
 
 	} else {
 		// formulate new ratio proposition
@@ -119,12 +116,8 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 		// toSend := "BarAn" + fmt.Sprintf("%f", newRatio)
 		toSend := fmt.Sprintf("%f\n", newRatio)
 		_, err = io.WriteString(conn, toSend)
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Println("Sent to peer : " + toSend)
-		}
-
+		utils.ErrorHandler(err)
+		updatePeerRatio(ratios, peer, newRatio)
 	}
 
 }

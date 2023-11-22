@@ -11,7 +11,7 @@ import (
 	"bartering/bartering-api"
 )
 
-var PORT = "8081"
+var PORT = "8083"
 
 var NodeStorage = 400000000.0
 
