@@ -8,7 +8,6 @@ import (
 	"net"
 	"strconv"
 	"sync"
-	"time"
 
 	// "bartering/functions"
 	"bartering/utils"
@@ -75,6 +74,7 @@ func InitiateBarter(peer string, ratios []NodeRatio) error {
 	if response == "OK\n" {
 		// update that ratio value
 		updatePeerRatio(ratios, peer, newRatio)
+		fmt.Println(ratios)
 	} else {
 		// in this case we have received a response to our barter message, we have to deal w it
 		ratio, err := strconv.ParseFloat(response[:len(response)-1], 64)
@@ -105,7 +105,7 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 		} else {
 			fmt.Println("Sent OK message to peer")
 		}
-		updatePeerRatio(ratios, peer, barterMsg_ratio)
+		updatePeerRatio(ratios, peer, 1/barterMsg_ratio)
 		fmt.Println(ratios)
 
 	} else {
@@ -117,7 +117,7 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 		toSend := fmt.Sprintf("%f\n", newRatio)
 		_, err = io.WriteString(conn, toSend)
 		utils.ErrorHandler(err)
-		updatePeerRatio(ratios, peer, newRatio)
+		updatePeerRatio(ratios, peer, 1/newRatio)
 	}
 
 }
@@ -277,11 +277,11 @@ func contactNodeForBarter(peer string, msg string) string {
 
 	utils.ErrorHandler(err)
 	fmt.Println("barter message sent")
-	time.Sleep(2 * time.Second)
+	// time.Sleep(2 * time.Second)
 	response := bufio.NewReader(conn)
 	fmt.Println("Response received!")
 	responseString, err := response.ReadString('\n')
-	fmt.Println(responseString)
+	// fmt.Println(responseString)
 	utils.ErrorHandler(err)
 
 	return responseString

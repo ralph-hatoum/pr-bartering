@@ -48,6 +48,7 @@ func main() {
 	}()
 
 	err := bartering.InitiateBarter("127.0.0.1", ratiosAtPeers)
+	fmt.Println(ratiosAtPeers)
 
 	if err != nil {
 		fmt.Println("Bartering request failed")
