@@ -34,5 +34,8 @@ Functions and datatypes used to represent storage requests and deal with them
 ### storage-testing
 Functions used to request proof of storage from other peers
 
+### datastructures
+All datastructures used declared in a single library to prevent circular dependencies
+
 ### utils
 General functions to perform operations such as printing lists or handling errors

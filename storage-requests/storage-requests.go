@@ -2,7 +2,7 @@ package storagerequests
 
 import (
 	api_ipfs "bartering/api-ipfs"
-	bartering "bartering/bartering-api"
+	datastructures "bartering/data-structures"
 	"bartering/utils"
 	"bufio"
 	"errors"
@@ -15,32 +15,7 @@ import (
 
 var SCORE_DECREASE_REFUSED_STO_REQ = 0.8
 
-type FulfilledRequest struct {
-	CID  string
-	Peer string
-}
-
-type StorageRequest struct {
-	/*
-		Data structure to represent storage requests ; consist of the CID of a file and its size
-	*/
-
-	CID      string
-	FileSize float64
-}
-
-type StorageRequestTimed struct {
-	CID             string
-	FileSize        float64
-	DurationMinutes int
-}
-
-type FilesAtPeers struct {
-	Peer  string
-	Files []string
-}
-
-func BuildStorageRequestMessage(storageRequest StorageRequest) string {
+func BuildStorageRequestMessage(storageRequest datastructures.StorageRequest) string {
 
 	/*
 		Function to build a storage request message from a StorageRequest object
@@ -54,7 +29,7 @@ func BuildStorageRequestMessage(storageRequest StorageRequest) string {
 	return storageRequestMessage
 }
 
-func buildFulfilledRequestObject(CID string, peer string) FulfilledRequest {
+func buildFulfilledRequestObject(CID string, peer string) datastructures.FulfilledRequest {
 
 	/*
 		Function to build a fulfilled request object
@@ -62,12 +37,12 @@ func buildFulfilledRequestObject(CID string, peer string) FulfilledRequest {
 		Output : FulfilledRequest object
 	*/
 
-	fulfilledRequest := FulfilledRequest{CID: CID, Peer: peer}
+	fulfilledRequest := datastructures.FulfilledRequest{CID: CID, Peer: peer}
 
 	return fulfilledRequest
 }
 
-func addFulFilledRequestToFulfilledRequests(request FulfilledRequest, requests *[]FulfilledRequest) {
+func addFulFilledRequestToFulfilledRequests(request datastructures.FulfilledRequest, requests *[]datastructures.FulfilledRequest) {
 
 	/*
 		Function to add fulfilled request object to fulfilled requests list
@@ -77,7 +52,7 @@ func addFulFilledRequestToFulfilledRequests(request FulfilledRequest, requests *
 	*requests = append(*requests, request)
 }
 
-func updateFulfilledRequests(CID string, peer string, fulfilledRequests *[]FulfilledRequest) {
+func updateFulfilledRequests(CID string, peer string, fulfilledRequests *[]datastructures.FulfilledRequest) {
 
 	/*
 		Function to add a fulfilled request from CID and peer name to fulfilled requests
@@ -90,7 +65,7 @@ func updateFulfilledRequests(CID string, peer string, fulfilledRequests *[]Fulfi
 
 }
 
-func RequestStorageFromPeer(peer string, storageRequest StorageRequest, port string, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore, fulfilledRequests *[]FulfilledRequest) {
+func RequestStorageFromPeer(peer string, storageRequest datastructures.StorageRequest, port string, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, fulfilledRequests *[]datastructures.FulfilledRequest) {
 
 	/*
 		Function to request storage from a peer
@@ -124,7 +99,7 @@ func RequestStorageFromPeer(peer string, storageRequest StorageRequest, port str
 	}
 }
 
-func updatePeerScoreRefusedRq(scores []bartering.NodeScore, peer string) {
+func updatePeerScoreRefusedRq(scores []datastructures.NodeScore, peer string) {
 
 	/*
 		Function used to update the peer score (decrease it) upon refusing a storage request
@@ -138,7 +113,7 @@ func updatePeerScoreRefusedRq(scores []bartering.NodeScore, peer string) {
 	}
 }
 
-func updateBytesAtPeers(bytesAtPeers []bartering.PeerStorageUse, peer string, storageRequest StorageRequest) {
+func updateBytesAtPeers(bytesAtPeers []datastructures.PeerStorageUse, peer string, storageRequest datastructures.StorageRequest) {
 
 	/*
 		Function to update a PeerStorageUse object in a PeerStorageUse
@@ -152,7 +127,7 @@ func updateBytesAtPeers(bytesAtPeers []bartering.PeerStorageUse, peer string, st
 	}
 }
 
-func updateBytesForPeers(bytesForPeers []bartering.PeerStorageUse, peer string, fileSize float64) {
+func updateBytesForPeers(bytesForPeers []datastructures.PeerStorageUse, peer string, fileSize float64) {
 
 	/*
 		Function to update a PeerStorageUse object in a PeerStorageUse
@@ -166,7 +141,7 @@ func updateBytesForPeers(bytesForPeers []bartering.PeerStorageUse, peer string, 
 	}
 }
 
-func HandleStorageRequest(bufferString string, conn net.Conn, bytesForPeers []bartering.PeerStorageUse, storedForPeers *[]FulfilledRequest) {
+func HandleStorageRequest(bufferString string, conn net.Conn, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest) {
 
 	/*
 		Function to handle a storage message type message
@@ -185,7 +160,7 @@ func HandleStorageRequest(bufferString string, conn net.Conn, bytesForPeers []ba
 	fileSizeFloat, err := strconv.ParseFloat(fileSize, 64)
 	utils.ErrorHandler(err)
 
-	request := StorageRequest{FileSize: fileSizeFloat, CID: CID}
+	request := datastructures.StorageRequest{FileSize: fileSizeFloat, CID: CID}
 
 	fmt.Println("Storage request : ", request, " ; checking validity ...")
 
@@ -210,7 +185,7 @@ func HandleStorageRequest(bufferString string, conn net.Conn, bytesForPeers []ba
 
 }
 
-func ElectStorageNodes(peerScores []bartering.NodeScore, numberOfNodes int) ([]string, error) {
+func ElectStorageNodes(peerScores []datastructures.NodeScore, numberOfNodes int) ([]string, error) {
 
 	/*
 		Function to elect nodes to whom self will send storage requests
@@ -224,7 +199,7 @@ func ElectStorageNodes(peerScores []bartering.NodeScore, numberOfNodes int) ([]s
 		return []string{}, errors.New("asking for more peers than we know")
 	}
 
-	electedNodesScores := []bartering.NodeScore{}
+	electedNodesScores := []datastructures.NodeScore{}
 	for _, peerScore := range peerScores {
 
 		if len(electedNodesScores) < numberOfNodes {
@@ -252,7 +227,7 @@ func ElectStorageNodes(peerScores []bartering.NodeScore, numberOfNodes int) ([]s
 	return electedNodes, nil
 }
 
-func CheckRqValidity(storageRequest StorageRequest) bool {
+func CheckRqValidity(storageRequest datastructures.StorageRequest) bool {
 
 	/*
 		Function to decide if a received storageRequest should be accepted or not
@@ -261,7 +236,7 @@ func CheckRqValidity(storageRequest StorageRequest) bool {
 	return true
 }
 
-func CheckCIDValidity(storageRequest StorageRequest) bool {
+func CheckCIDValidity(storageRequest datastructures.StorageRequest) bool {
 
 	/*
 		Check if : CID is valid and exists
@@ -273,7 +248,7 @@ func CheckCIDValidity(storageRequest StorageRequest) bool {
 	return true
 }
 
-func CheckFileSizeValidity(storageRequest StorageRequest) bool {
+func CheckFileSizeValidity(storageRequest datastructures.StorageRequest) bool {
 
 	/*
 		Check if fileSize announced in storage request is declared honestly
@@ -282,7 +257,7 @@ func CheckFileSizeValidity(storageRequest StorageRequest) bool {
 	return true
 }
 
-func CheckEnoughSpace(storageRequest StorageRequest, currentStorageSpace float64, NodeTotalStorageSpace float64) bool {
+func CheckEnoughSpace(storageRequest datastructures.StorageRequest, currentStorageSpace float64, NodeTotalStorageSpace float64) bool {
 
 	/*
 		Check if self has enough space to store the file

@@ -4,26 +4,15 @@ import (
 	"fmt"
 
 	api_ipfs "bartering/api-ipfs"
+	datastructures "bartering/data-structures"
 	storagerequests "bartering/storage-requests"
 
 	bootstrapconnect "bartering/bootstrap-connect"
 
 	"bartering/utils"
-
-	"bartering/bartering-api"
 )
 
-type StorageRequest struct {
-
-	/*
-		Data structure to represent storage requests ; consist of the CID of a file and its size
-	*/
-
-	CID      string
-	fileSize float64
-}
-
-func NodeStartup() ([]string, []StorageRequest, []storagerequests.FulfilledRequest, []string, []bartering.PeerStorageUse, []bartering.PeerStorageUse, []bartering.NodeScore, []bartering.NodeRatio, []bartering.NodeRatio, []storagerequests.FulfilledRequest) {
+func NodeStartup() ([]string, []datastructures.StorageRequest, []datastructures.FulfilledRequest, []string, []datastructures.PeerStorageUse, []datastructures.PeerStorageUse, []datastructures.NodeScore, []datastructures.NodeRatio, []datastructures.NodeRatio, []datastructures.FulfilledRequest) {
 
 	/*
 		Function called upon a node's startup
@@ -47,7 +36,7 @@ func NodeStartup() ([]string, []StorageRequest, []storagerequests.FulfilledReque
 	fmt.Println("Creating storage pool and requests lists")
 	storage_pool, pending_requests, _ := createStorageRequestsLists()
 
-	fulfilled_requests := []storagerequests.FulfilledRequest{}
+	fulfilled_requests := []datastructures.FulfilledRequest{}
 
 	fmt.Println("Creating peers list")
 	peers := bootstrapconnect.GetPeersFromBootstrapHTTP("127.0.0.1", "8082")
@@ -59,12 +48,12 @@ func NodeStartup() ([]string, []StorageRequest, []storagerequests.FulfilledReque
 	ratiosForPeers := initiateRatios(peers, 1.0)
 	ratiosAtPeers := initiateRatios(peers, 1.0)
 
-	storedForPeers := []storagerequests.FulfilledRequest{}
+	storedForPeers := []datastructures.FulfilledRequest{}
 
 	return storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers
 }
 
-func initiatePeerStorageUseArray(peers []string, initialStorage float64) []bartering.PeerStorageUse {
+func initiatePeerStorageUseArray(peers []string, initialStorage float64) []datastructures.PeerStorageUse {
 
 	/*
 		Function to initiate an array of PeerStorageUse objects
@@ -72,14 +61,14 @@ func initiatePeerStorageUseArray(peers []string, initialStorage float64) []barte
 		Output : array of PeerStorageUse objects
 	*/
 
-	bytesAtPeers := []bartering.PeerStorageUse{}
+	bytesAtPeers := []datastructures.PeerStorageUse{}
 	for _, peer := range peers {
-		bytesAtPeers = append(bytesAtPeers, bartering.PeerStorageUse{NodeIP: peer, StorageAtNode: initialStorage})
+		bytesAtPeers = append(bytesAtPeers, datastructures.PeerStorageUse{NodeIP: peer, StorageAtNode: initialStorage})
 	}
 	return bytesAtPeers
 }
 
-func initiateScores(peers []string, initialScore float64) []bartering.NodeScore {
+func initiateScores(peers []string, initialScore float64) []datastructures.NodeScore {
 
 	/*
 		Function to iniate an array of bartering.NodeScore objects
@@ -87,14 +76,14 @@ func initiateScores(peers []string, initialScore float64) []bartering.NodeScore 
 		Output : bartering.NodeScore array
 	*/
 
-	scores := []bartering.NodeScore{}
+	scores := []datastructures.NodeScore{}
 	for _, peer := range peers {
-		scores = append(scores, bartering.NodeScore{NodeIP: peer, Score: initialScore})
+		scores = append(scores, datastructures.NodeScore{NodeIP: peer, Score: initialScore})
 	}
 	return scores
 }
 
-func initiateRatios(peers []string, initialRatio float64) []bartering.NodeRatio {
+func initiateRatios(peers []string, initialRatio float64) []datastructures.NodeRatio {
 
 	/*
 		Funciton to initiate array of bartering.Noderatio objects
@@ -102,14 +91,14 @@ func initiateRatios(peers []string, initialRatio float64) []bartering.NodeRatio 
 		Output : bartering.NodeRatio array
 	*/
 
-	ratios := []bartering.NodeRatio{}
+	ratios := []datastructures.NodeRatio{}
 	for _, peer := range peers {
-		ratios = append(ratios, bartering.NodeRatio{NodeIP: peer, Ratio: initialRatio})
+		ratios = append(ratios, datastructures.NodeRatio{NodeIP: peer, Ratio: initialRatio})
 	}
 	return ratios
 }
 
-func Store(path string, storage_pool []string, pending_requests []StorageRequest) {
+func Store(path string, storage_pool []string, pending_requests []datastructures.StorageRequest) {
 
 	/*
 		UNFINISHED
@@ -130,14 +119,14 @@ func Store(path string, storage_pool []string, pending_requests []StorageRequest
 
 	fmt.Println(file_size)
 
-	storage_request := StorageRequest{CID, file_size}
+	storage_request := datastructures.StorageRequest{CID, file_size}
 
 	pending_requests = append(pending_requests, storage_request)
 
 	fmt.Println("Pending requests : ", pending_requests)
 }
 
-func createStorageRequestsLists() ([]string, []StorageRequest, []StorageRequest) {
+func createStorageRequestsLists() ([]string, []datastructures.StorageRequest, []datastructures.StorageRequest) {
 
 	/*
 		Function to create all needed data structures
@@ -147,15 +136,15 @@ func createStorageRequestsLists() ([]string, []StorageRequest, []StorageRequest)
 
 	storage_pool := []string{}
 
-	pending_requests := []StorageRequest{}
+	pending_requests := []datastructures.StorageRequest{}
 
-	fulfilled_requests := []StorageRequest{}
+	fulfilled_requests := []datastructures.StorageRequest{}
 
 	return storage_pool, pending_requests, fulfilled_requests
 
 }
 
-func propagateToPeers(storageRequest storagerequests.StorageRequest) {
+func propagateToPeers(storageRequest datastructures.StorageRequest) {
 	messageToPropagate := storagerequests.BuildStorageRequestMessage(storageRequest)
 	fmt.Println(messageToPropagate)
 

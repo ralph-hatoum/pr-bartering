@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	datastructures "bartering/data-structures"
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
 	storagerequests "bartering/storage-requests"
@@ -49,7 +50,7 @@ func main() {
 
 	single_node := to_request[0]
 
-	stoRq := storagerequests.StorageRequest{CID: "QmV9tSDx9UiPeWExXEeH6aoDvmihvx6jD5eLb4jbTaKGps", FileSize: 5.0}
+	stoRq := datastructures.StorageRequest{CID: "QmV9tSDx9UiPeWExXEeH6aoDvmihvx6jD5eLb4jbTaKGps", FileSize: 5.0}
 
 	storagerequests.RequestStorageFromPeer(single_node, stoRq, "8081", bytesAtPeers, scores, &fulfilled_requests)
 	fmt.Println(bytesAtPeers)

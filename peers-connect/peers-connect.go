@@ -5,12 +5,13 @@ import (
 	"net"
 
 	"bartering/bartering-api"
+	datastructures "bartering/data-structures"
 	storagerequests "bartering/storage-requests"
 	storagetesting "bartering/storage-testing"
 	"bartering/utils"
 )
 
-func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore, ratiosAtPeers []bartering.NodeRatio, ratiosForPeers []bartering.NodeRatio, bytesForPeers []bartering.PeerStorageUse, storedForPeers *[]storagerequests.FulfilledRequest) {
+func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, ratiosAtPeers []datastructures.NodeRatio, ratiosForPeers []datastructures.NodeRatio, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest) {
 
 	/*
 		TCP server to receive messages from peers
@@ -29,7 +30,7 @@ func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []bar
 	}
 }
 
-func handleConnection(conn net.Conn, nodeStorage float64, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore, ratios []bartering.NodeRatio, bytesForPeers []bartering.PeerStorageUse, storedForPeers *[]storagerequests.FulfilledRequest) {
+func handleConnection(conn net.Conn, nodeStorage float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, ratios []datastructures.NodeRatio, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest) {
 
 	/*
 		Connection handler for TCP connections received through the TCP server
@@ -46,7 +47,7 @@ func handleConnection(conn net.Conn, nodeStorage float64, bytesAtPeers []barteri
 
 }
 
-func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore, ratios []bartering.NodeRatio, bytesForPeers []bartering.PeerStorageUse, storedForPeers *[]storagerequests.FulfilledRequest) {
+func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, ratios []datastructures.NodeRatio, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest) {
 
 	/*
 		Function used to discriminate different types of messages and call the necessary functions for each type of messages
@@ -70,7 +71,7 @@ func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, byt
 
 	} else if messageType == "TesRq" {
 
-		fmt.Println("Received test request")
+		fmt.Println("Recieved test request")
 		CID := bufferString[5 : len(bufferString)-1]
 		fmt.Println(CID)
 		storagetesting.HandleTest(CID, conn)

@@ -1,11 +1,14 @@
 package bartering
 
-import "testing"
+import (
+	datastructures "bartering/data-structures"
+	"testing"
+)
 
 // TODO Write tests
 
 func TestFindNodeRatio(t *testing.T) {
-	ratios := []NodeRatio{
+	ratios := []datastructures.NodeRatio{
 		{NodeIP: "peer1", Ratio: 0.5},
 		{NodeIP: "peer2", Ratio: 0.8},
 	}
@@ -17,7 +20,7 @@ func TestFindNodeRatio(t *testing.T) {
 }
 
 func TestUpdatePeerRatio(t *testing.T) {
-	ratios := []NodeRatio{
+	ratios := []datastructures.NodeRatio{
 		{NodeIP: "peer1", Ratio: 0.5},
 		{NodeIP: "peer2", Ratio: 0.8},
 	}

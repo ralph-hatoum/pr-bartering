@@ -2,8 +2,7 @@ package storagetesting
 
 import (
 	api_ipfs "bartering/api-ipfs"
-	"bartering/bartering-api"
-	storagerequests "bartering/storage-requests"
+	datastructures "bartering/data-structures"
 	"bartering/utils"
 	"crypto/sha256"
 	"errors"
@@ -17,22 +16,13 @@ var PORT = "8081"
 
 var TIMER_TIMEOUT_SEC = 5
 
-type ScoreVariationScenario struct {
-	/*
-		We setup scenarios such as "failedTestTimeout" or "FailedTestWrongAns" to decrease or increase scores
-		differently given the situation
-	*/
-	Scenario  string
-	Variation float64
-}
-
 var TESTING_PERIOD = 20 * time.Second
 
-var DecreasingBehavior = []ScoreVariationScenario{{Scenario: "failedTestTimeout", Variation: 0.5}, {Scenario: "failedTestWrongAns", Variation: 0.7}}
+var DecreasingBehavior = []datastructures.ScoreVariationScenario{{Scenario: "failedTestTimeout", Variation: 0.5}, {Scenario: "failedTestWrongAns", Variation: 0.7}}
 
-var IncreasingBehavior = []ScoreVariationScenario{{Scenario: "passedTest", Variation: 0.2}}
+var IncreasingBehavior = []datastructures.ScoreVariationScenario{{Scenario: "passedTest", Variation: 0.2}}
 
-func PeriodicTests(fulfilledRequests []storagerequests.FulfilledRequest, scores []bartering.NodeScore) {
+func PeriodicTests(fulfilledRequests []datastructures.FulfilledRequest, scores []datastructures.NodeScore) {
 
 	/*
 		Function to requests tests periodically from peers storing our data
@@ -47,7 +37,7 @@ func PeriodicTests(fulfilledRequests []storagerequests.FulfilledRequest, scores 
 	}
 }
 
-func RequestTest(CID string, filesAtPeers []storagerequests.FilesAtPeers, scores []bartering.NodeScore) {
+func RequestTest(CID string, filesAtPeers []datastructures.FilesAtPeers, scores []datastructures.NodeScore) {
 
 	/*
 		Function to request tests on a file stored at peers
@@ -82,7 +72,7 @@ func HandleTest(CID string, conn net.Conn) {
 
 }
 
-func ContactPeerForTest(CID string, peer string, scores []bartering.NodeScore) {
+func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeScore) {
 
 	/*
 		Function to contact a peer to ask for a test, check answer and update score accordingly
@@ -142,7 +132,7 @@ func handleResponse(responseChannel chan<- string, conn net.Conn) {
 	responseChannel <- response
 }
 
-func findStorers(CID string, filesAtPeers []storagerequests.FilesAtPeers) ([]string, error) {
+func findStorers(CID string, filesAtPeers []datastructures.FilesAtPeers) ([]string, error) {
 
 	/*
 		Function to find peers storing a file for self
@@ -181,7 +171,7 @@ func lookForFile(CID string, fileList []string) bool {
 	return false
 }
 
-func findScoreVariation(variations []ScoreVariationScenario, scenario string) (float64, error) {
+func findScoreVariation(variations []datastructures.ScoreVariationScenario, scenario string) (float64, error) {
 
 	/*
 		Function to find how much a score should be decreased or increased given the situation
@@ -220,7 +210,7 @@ func computeExpectedAnswer(CID string) []byte {
 also unify decreasing and increasing behavior dics into one update doc with signed float64 values
 */
 
-func decreaseScore(peer string, scenario string, scores []bartering.NodeScore) {
+func decreaseScore(peer string, scenario string, scores []datastructures.NodeScore) {
 
 	/*
 		Given a scenario, decrease a peer's score accordingly
@@ -238,7 +228,7 @@ func decreaseScore(peer string, scenario string, scores []bartering.NodeScore) {
 
 }
 
-func increaseScore(peer string, scenario string, scores []bartering.NodeScore) {
+func increaseScore(peer string, scenario string, scores []datastructures.NodeScore) {
 
 	/*
 		Given a scenario, increase a peer's score accordingly

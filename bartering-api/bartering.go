@@ -10,32 +10,9 @@ import (
 	"sync"
 
 	// "bartering/functions"
+	datastructures "bartering/data-structures"
 	"bartering/utils"
 )
-
-type NodeScore struct {
-	NodeIP string
-	Score  float64
-}
-
-type PeerStorageUse struct {
-	NodeIP        string
-	StorageAtNode float64
-}
-
-type NodeRatio struct {
-	NodeIP string
-	Ratio  float64
-}
-
-type StorageRequest struct {
-	/*
-		Data structure to represent storage requests ; consist of the CID of a file and its size
-	*/
-
-	CID      string
-	fileSize float64
-}
 
 var InitScore = 10.0
 
@@ -51,7 +28,7 @@ var factorAcceptableRatio = 0.3
 
 var PORT = "8084"
 
-func InitiateBarter(peer string, ratios []NodeRatio) error {
+func InitiateBarter(peer string, ratios []datastructures.NodeRatio) error {
 
 	/*
 		Function to barter the storage ratio
@@ -83,7 +60,7 @@ func InitiateBarter(peer string, ratios []NodeRatio) error {
 	return nil
 }
 
-func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, bytesAtPeers []PeerStorageUse, scores []NodeScore, conn net.Conn, ratios []NodeRatio) {
+func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, conn net.Conn, ratios []datastructures.NodeRatio) {
 
 	/*
 		Function to answer a barter request
@@ -120,7 +97,7 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 
 }
 
-func updatePeerRatio(ratios []NodeRatio, peer string, newRatio float64) {
+func updatePeerRatio(ratios []datastructures.NodeRatio, peer string, newRatio float64) {
 
 	/*
 		Function to update a peer's ratio
@@ -134,7 +111,7 @@ func updatePeerRatio(ratios []NodeRatio, peer string, newRatio float64) {
 	}
 }
 
-func FindNodeRatio(ratios []NodeRatio, peer string) (float64, error) {
+func FindNodeRatio(ratios []datastructures.NodeRatio, peer string) (float64, error) {
 
 	/*
 		Function to find a peer's current storage ratio
@@ -148,11 +125,11 @@ func FindNodeRatio(ratios []NodeRatio, peer string) (float64, error) {
 		}
 	}
 
-	return NodeRatio{}.Ratio, errors.New("peer not found when looking for ratio")
+	return datastructures.NodeRatio{}.Ratio, errors.New("peer not found when looking for ratio")
 
 }
 
-func formulateBarterResponse(peer string, scores []NodeScore, storageSpace float64, bytesAtPeers []PeerStorageUse) float64 {
+func formulateBarterResponse(peer string, scores []datastructures.NodeScore, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse) float64 {
 
 	/*
 		Function to counter barter in case the other node's proposition is not acceptable
@@ -175,7 +152,7 @@ func calculateNewRatio(ratio float64) float64 {
 	return ratio * (1 + RatioIncreaseRate)
 }
 
-func shouldRatioBeAccepted(ratio float64, peer string, storageSpace float64, bytesAtPeers []PeerStorageUse, scores []NodeScore) bool {
+func shouldRatioBeAccepted(ratio float64, peer string, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore) bool {
 
 	/*
 		Function to decided based off score and current storage space if the barter request can be accepted
@@ -204,7 +181,7 @@ func shouldResponseRatioBeAccepted(ratio float64) bool {
 	return true
 }
 
-func isRatioTolerableGivenStorageSpace(peer string, ratio float64, storageSpace float64, bytesAtPeers []PeerStorageUse) bool {
+func isRatioTolerableGivenStorageSpace(peer string, ratio float64, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse) bool {
 
 	/*
 		Function to decided if the propoed ratio is tolerable given the current storage space on the node
@@ -220,7 +197,7 @@ func isRatioTolerableGivenStorageSpace(peer string, ratio float64, storageSpace 
 	return peerStorageUse.StorageAtNode*ratio < storageSpace
 }
 
-func findPeerStorageUse(peer string, bytesAtPeers []PeerStorageUse) (PeerStorageUse, error) {
+func findPeerStorageUse(peer string, bytesAtPeers []datastructures.PeerStorageUse) (datastructures.PeerStorageUse, error) {
 
 	/*
 		Function to find the storage used by self at a peer
@@ -234,10 +211,10 @@ func findPeerStorageUse(peer string, bytesAtPeers []PeerStorageUse) (PeerStorage
 		}
 	}
 
-	return PeerStorageUse{}, errors.New("peer not found")
+	return datastructures.PeerStorageUse{}, errors.New("peer not found")
 }
 
-func calculateMaxAcceptableRatio(peer string, scores []NodeScore, storageSpace float64, bytesAtPeers []PeerStorageUse) float64 {
+func calculateMaxAcceptableRatio(peer string, scores []datastructures.NodeScore, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse) float64 {
 
 	/*
 		Function to calculate the maximum acceptable ratio given a peer's score
@@ -259,7 +236,7 @@ func calculateMaxAcceptableRatio(peer string, scores []NodeScore, storageSpace f
 	return ratio
 }
 
-func findPeerScore(peer string, scores []NodeScore) (NodeScore, error) {
+func findPeerScore(peer string, scores []datastructures.NodeScore) (datastructures.NodeScore, error) {
 
 	/*
 		Function to find a peer's score
@@ -272,7 +249,7 @@ func findPeerScore(peer string, scores []NodeScore) (NodeScore, error) {
 		}
 
 	}
-	return NodeScore{}, errors.New("peer not in peers list")
+	return datastructures.NodeScore{}, errors.New("peer not in peers list")
 }
 
 func contactNodeForBarter(peer string, msg string) string {
@@ -298,23 +275,23 @@ func contactNodeForBarter(peer string, msg string) string {
 	return responseString
 }
 
-func InitNodeScores(peers []string) []NodeScore {
+func InitNodeScores(peers []string) []datastructures.NodeScore {
 
 	/*
 		Function to initiate node scores
 	*/
 
-	scores := []NodeScore{}
+	scores := []datastructures.NodeScore{}
 
 	for _, peer := range peers {
-		score := NodeScore{NodeIP: peer, Score: InitScore}
+		score := datastructures.NodeScore{NodeIP: peer, Score: InitScore}
 		scores = append(scores, score)
 	}
 
 	return scores
 }
 
-func dealWithRefusedRequest(storageRequest StorageRequest) {
+func dealWithRefusedRequest(storageRequest datastructures.StorageRequest) {
 
 	/*
 		Function to deal with a refused storage request
@@ -322,7 +299,7 @@ func dealWithRefusedRequest(storageRequest StorageRequest) {
 		then the tolerance needs to go up
 	*/
 
-	fileSize := storageRequest.fileSize
+	fileSize := storageRequest.FileSize
 
 	delta := fileSize / float64(NodeTotalStorageSpace)
 
@@ -330,13 +307,13 @@ func dealWithRefusedRequest(storageRequest StorageRequest) {
 
 }
 
-func craftNewRq(storageRequest StorageRequest) StorageRequest {
+func craftNewRq(storageRequest datastructures.StorageRequest) datastructures.StorageRequest {
 
 	/*
 		Function to craft a new better suited request aftet it was refused
 	*/
 
-	return StorageRequest{}
+	return datastructures.StorageRequest{}
 
 }
 
