@@ -10,6 +10,7 @@ import (
 )
 
 func ErrorHandler(err error) {
+
 	/*
 		To handle errors ; panics with -1 if there is an error
 		Arguments : error of type error
@@ -23,6 +24,7 @@ func ErrorHandler(err error) {
 }
 
 func ListPrint(list []string) {
+
 	/*
 		To print a string list's elements
 		Arguments : list as a string list
@@ -34,6 +36,7 @@ func ListPrint(list []string) {
 }
 
 func GetFileSize(path string) float64 {
+
 	/*
 		Returns file size in KB
 		Arguments : path to file as a string
