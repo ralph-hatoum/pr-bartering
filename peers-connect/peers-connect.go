@@ -10,18 +10,12 @@ import (
 	"bartering/utils"
 )
 
-// var PORT = "8081"
-
-// var NodeStorageSpace = 400988.45 * 1000
-
-// var bytesAtPeers = []bartering.PeerStorageUse{{NodeIP: "127.0.0.1", StorageAtNode: 400988.45}}
-
-// var scores = []bartering.NodeScore{{NodeIP: "127.0.0.1", Score: 10.0}}
-
 func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore, ratiosAtPeers []bartering.NodeRatio, ratiosForPeers []bartering.NodeRatio, bytesForPeers []bartering.PeerStorageUse, storedForPeers *[]storagerequests.FulfilledRequest) {
+
 	/*
 		TCP server to receive messages from peers
 	*/
+
 	listener, err := net.Listen("tcp", ":"+port)
 
 	fmt.Println(ratiosForPeers)
@@ -36,6 +30,7 @@ func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []bar
 }
 
 func handleConnection(conn net.Conn, nodeStorage float64, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore, ratios []bartering.NodeRatio, bytesForPeers []bartering.PeerStorageUse, storedForPeers *[]storagerequests.FulfilledRequest) {
+
 	/*
 		Connection handler for TCP connections received through the TCP server
 		Arguments : a connection as net.Conn
@@ -52,12 +47,13 @@ func handleConnection(conn net.Conn, nodeStorage float64, bytesAtPeers []barteri
 }
 
 func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, bytesAtPeers []bartering.PeerStorageUse, scores []bartering.NodeScore, ratios []bartering.NodeRatio, bytesForPeers []bartering.PeerStorageUse, storedForPeers *[]storagerequests.FulfilledRequest) {
+
 	/*
 		Function used to discriminate different types of messages and call the necessary functions for each type of messages
 		Arguments : a slide of bytes []byte
 	*/
-	bufferString := string(buffer)
 
+	bufferString := string(buffer)
 	messageType := bufferString[:5]
 
 	if messageType == "StoRq" {
@@ -66,24 +62,22 @@ func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, byt
 
 	} else if messageType == "BarRq" {
 
-		fmt.Println("Received bartering request")
-		// Maybe check if peer is known ???
-
 		remoteAddr := conn.RemoteAddr()
 		ip, _, err := net.SplitHostPort(remoteAddr.String())
 		utils.ErrorHandler(err)
-
 		fmt.Println("Received bartering request from peer", ip)
-
 		bartering.RespondToBarterMsg(bufferString, ip, nodeStorage, bytesAtPeers, scores, conn, ratios)
 
 	} else if messageType == "TesRq" {
-		fmt.Println("Recieved test request")
+
+		fmt.Println("Received test request")
 		CID := bufferString[5 : len(bufferString)-1]
 		fmt.Println(CID)
 		storagetesting.HandleTest(CID, conn)
 
 	} else {
+
 		fmt.Println("Unrecognized message : ", bufferString)
+
 	}
 }
