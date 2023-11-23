@@ -28,5 +28,11 @@ General funtions used in the node daemon
 ### peers-connect
 Functions used to interact with other peers in the network
 
+### storage-requests
+Functions and datatypes used to represent storage requests and deal with them
+
+### storage-testing
+Functions used to request proof of storage from other peers
+
 ### utils
 General functions to perform operations such as printing lists or handling errors
