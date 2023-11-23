@@ -24,6 +24,7 @@ type StorageRequest struct {
 }
 
 func NodeStartup() ([]string, []StorageRequest, []storagerequests.FulfilledRequest, []string, []bartering.PeerStorageUse, []bartering.PeerStorageUse, []bartering.NodeScore, []bartering.NodeRatio, []bartering.NodeRatio, []storagerequests.FulfilledRequest) {
+
 	/*
 		Function called upon a node's startup
 		This function will create all needed lists :
@@ -64,6 +65,13 @@ func NodeStartup() ([]string, []StorageRequest, []storagerequests.FulfilledReque
 }
 
 func initiatePeerStorageUseArray(peers []string, initialStorage float64) []bartering.PeerStorageUse {
+
+	/*
+		Function to initiate an array of PeerStorageUse objects
+		Arguments : list of peers, initialStorage value (usually at 0.0)
+		Output : array of PeerStorageUse objects
+	*/
+
 	bytesAtPeers := []bartering.PeerStorageUse{}
 	for _, peer := range peers {
 		bytesAtPeers = append(bytesAtPeers, bartering.PeerStorageUse{NodeIP: peer, StorageAtNode: initialStorage})
@@ -72,6 +80,13 @@ func initiatePeerStorageUseArray(peers []string, initialStorage float64) []barte
 }
 
 func initiateScores(peers []string, initialScore float64) []bartering.NodeScore {
+
+	/*
+		Function to iniate an array of bartering.NodeScore objects
+		Arguments : list of peers, initial score value
+		Output : bartering.NodeScore array
+	*/
+
 	scores := []bartering.NodeScore{}
 	for _, peer := range peers {
 		scores = append(scores, bartering.NodeScore{NodeIP: peer, Score: initialScore})
@@ -80,6 +95,13 @@ func initiateScores(peers []string, initialScore float64) []bartering.NodeScore 
 }
 
 func initiateRatios(peers []string, initialRatio float64) []bartering.NodeRatio {
+
+	/*
+		Funciton to initiate array of bartering.Noderatio objects
+		Arguments : list of peers, initiat ratio value
+		Output : bartering.NodeRatio array
+	*/
+
 	ratios := []bartering.NodeRatio{}
 	for _, peer := range peers {
 		ratios = append(ratios, bartering.NodeRatio{NodeIP: peer, Ratio: initialRatio})
@@ -88,6 +110,7 @@ func initiateRatios(peers []string, initialRatio float64) []bartering.NodeRatio 
 }
 
 func Store(path string, storage_pool []string, pending_requests []StorageRequest) {
+
 	/*
 		UNFINISHED
 		Function called when a new file needs to be stored on the network
@@ -115,6 +138,7 @@ func Store(path string, storage_pool []string, pending_requests []StorageRequest
 }
 
 func createStorageRequestsLists() ([]string, []StorageRequest, []StorageRequest) {
+
 	/*
 		Function to create all needed data structures
 		Argument : None
