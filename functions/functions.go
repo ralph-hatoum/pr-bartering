@@ -14,6 +14,7 @@ import (
 )
 
 type StorageRequest struct {
+
 	/*
 		Data structure to represent storage requests ; consist of the CID of a file and its size
 	*/
@@ -24,7 +25,6 @@ type StorageRequest struct {
 
 func NodeStartup() ([]string, []StorageRequest, []storagerequests.FulfilledRequest, []string, []bartering.PeerStorageUse, []bartering.PeerStorageUse, []bartering.NodeScore, []bartering.NodeRatio, []bartering.NodeRatio, []storagerequests.FulfilledRequest) {
 	/*
-		UNFINISHED
 		Function called upon a node's startup
 		This function will create all needed lists :
 			- storagePool : list of CIDs of node's data
