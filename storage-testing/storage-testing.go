@@ -26,9 +26,20 @@ type ScoreVariationScenario struct {
 	Variation float64
 }
 
+var TESTING_PERIOD = 20 * time.Second
+
 var DecreasingBehavior = []ScoreVariationScenario{{Scenario: "failedTestTimeout", Variation: 0.5}, {Scenario: "failedTestWrongAns", Variation: 0.7}}
 
 var IncreasingBehavior = []ScoreVariationScenario{{Scenario: "passedTest", Variation: 0.2}}
+
+func PeriodicTests(fulfilledRequests []storagerequests.FulfilledRequest, scores []bartering.NodeScore) {
+	for {
+		time.Sleep(time.Duration(TESTING_PERIOD))
+		for _, fulfilledRequest := range fulfilledRequests {
+			ContactPeerForTest(fulfilledRequest.CID, fulfilledRequest.Peer, scores)
+		}
+	}
+}
 
 func RequestTest(CID string, filesAtPeers []storagerequests.FilesAtPeers, scores []bartering.NodeScore) {
 	/*
@@ -96,9 +107,11 @@ func ContactPeerForTest(CID string, peer string, scores []bartering.NodeScore) {
 		// Here, response was received, it should be checked if the response is correct or wrong to decide how score should evolve
 		// fmt.Println(response)
 		if checkAnswer(response, CID) {
-			fmt.Println("score should be increased")
+			fmt.Println("test passed")
 			increaseScore(peer, "passedTest", scores)
+			fmt.Println(scores)
 		} else {
+			fmt.Println("test not passed")
 			decreaseScore(peer, "failedTestWrongAns", scores)
 		}
 	}

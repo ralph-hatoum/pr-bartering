@@ -7,6 +7,7 @@ import (
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
 	storagerequests "bartering/storage-requests"
+	storagetesting "bartering/storage-testing"
 	"bartering/utils"
 )
 
@@ -54,6 +55,12 @@ func main() {
 	fmt.Println(bytesAtPeers)
 	fmt.Println(fulfilled_requests)
 	// Wait for the goroutine to finish.
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		storagetesting.PeriodicTests(fulfilled_requests, scores)
+	}()
 	wg.Wait()
 
 }

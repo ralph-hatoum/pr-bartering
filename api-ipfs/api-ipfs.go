@@ -82,8 +82,6 @@ func CatIPFS(cid string) string {
 
 	cmdOutput, err := exec.Command(cmd, cmdArgs...).Output()
 
-	fmt.Println(cmdOutput)
-
 	utils.ErrorHandler(err)
 
 	return string(cmdOutput)
