@@ -6,7 +6,7 @@ import (
 	fsnotify "github.com/fsnotify/fsnotify"
 )
 
-func FsWatcher() {
+func FsWatcher(path string) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
@@ -22,9 +22,17 @@ func FsWatcher() {
 				if !ok {
 					return
 				}
+				if event.Op&fsnotify.Create == fsnotify.Create {
+					log.Println("Created file:", event.Name)
+					// Handle the file creation event
+				}
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					log.Println("Modified file:", event.Name)
 					// Handle the file modification event
+				}
+				if event.Op&fsnotify.Rename == fsnotify.Rename {
+					log.Println("Removed file:", event.Name)
+					// Handle the file removal event
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
@@ -35,7 +43,7 @@ func FsWatcher() {
 		}
 	}()
 
-	err = watcher.Add("/path/to/directory")
+	err = watcher.Add(path)
 	if err != nil {
 		log.Fatal(err)
 	}

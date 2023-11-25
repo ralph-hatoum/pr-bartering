@@ -5,10 +5,9 @@ import (
 	"sync"
 
 	configextractor "bartering/config-extractor"
+	fswatcher "bartering/fs-watcher"
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
-	storagerequests "bartering/storage-requests"
-	"bartering/utils"
 )
 
 var NodeStorage float64
@@ -49,9 +48,11 @@ func main() {
 		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio)
 	}()
 
-	to_request, err := storagerequests.ElectStorageNodes(scores, 3)
-	utils.ErrorHandler(err)
-	fmt.Println(to_request)
+	// to_request, err := storagerequests.ElectStorageNodes(scores, 3)
+	// utils.ErrorHandler(err)
+	// fmt.Println(to_request)
+
+	fswatcher.FsWatcher("./test-data")
 
 	// Wait for the goroutine to finish.
 	wg.Wait()
