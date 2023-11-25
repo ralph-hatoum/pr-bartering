@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	configextractor "bartering/config-extractor"
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
 	storagerequests "bartering/storage-requests"
@@ -14,6 +15,11 @@ var NodeStorage float64
 var port = "8081"
 
 func main() {
+
+	fmt.Println("Extracting configuration")
+	config := configextractor.ConfigExtractor("config.yaml")
+
+	fmt.Println(config)
 
 	// storage_pool, pending_requests, fulfilled_storage, peers := functions.NodeStartup()
 	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers := functions.NodeStartup()
