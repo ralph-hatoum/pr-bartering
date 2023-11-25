@@ -40,6 +40,8 @@ func main() {
 	fmt.Println("")
 	fmt.Println("Node started ! Listening on port ", port)
 
+	DecreaseBehavior, IncreaseBehavior := functions.IncreaseDecreaseBehaviors(config)
+
 	var wg sync.WaitGroup // Import "sync" package to use WaitGroup.
 
 	wg.Add(1)
@@ -64,7 +66,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		storagetesting.PeriodicTests(fulfilled_requests, scores)
+		storagetesting.PeriodicTests(fulfilled_requests, scores, config.StoragetestingTimerTimeoutSec, port, config.StoragetestingTestingPeriod, DecreaseBehavior, IncreaseBehavior)
 	}()
 	wg.Wait()
 

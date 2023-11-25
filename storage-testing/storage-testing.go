@@ -12,17 +12,11 @@ import (
 	"time"
 )
 
-var PORT = "8081"
+// var DecreasingBehavior = []datastructures.ScoreVariationScenario{{Scenario: "failedTestTimeout", Variation: 0.5}, {Scenario: "failedTestWrongAns", Variation: 0.7}}
 
-var TIMER_TIMEOUT_SEC = 5
+// var IncreasingBehavior = []datastructures.ScoreVariationScenario{{Scenario: "passedTest", Variation: 0.2}}
 
-var TESTING_PERIOD = 20 * time.Second
-
-var DecreasingBehavior = []datastructures.ScoreVariationScenario{{Scenario: "failedTestTimeout", Variation: 0.5}, {Scenario: "failedTestWrongAns", Variation: 0.7}}
-
-var IncreasingBehavior = []datastructures.ScoreVariationScenario{{Scenario: "passedTest", Variation: 0.2}}
-
-func PeriodicTests(fulfilledRequests []datastructures.FulfilledRequest, scores []datastructures.NodeScore) {
+func PeriodicTests(fulfilledRequests []datastructures.FulfilledRequest, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, testingPeriod float64, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario) {
 
 	/*
 		Function to requests tests periodically from peers storing our data
@@ -30,14 +24,14 @@ func PeriodicTests(fulfilledRequests []datastructures.FulfilledRequest, scores [
 	*/
 
 	for {
-		time.Sleep(time.Duration(TESTING_PERIOD))
+		time.Sleep(time.Duration(testingPeriod * 1000000000))
 		for _, fulfilledRequest := range fulfilledRequests {
-			ContactPeerForTest(fulfilledRequest.CID, fulfilledRequest.Peer, scores)
+			ContactPeerForTest(fulfilledRequest.CID, fulfilledRequest.Peer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior)
 		}
 	}
 }
 
-func RequestTest(CID string, filesAtPeers []datastructures.FilesAtPeers, scores []datastructures.NodeScore) {
+func RequestTest(CID string, filesAtPeers []datastructures.FilesAtPeers, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario) {
 
 	/*
 		Function to request tests on a file stored at peers
@@ -53,7 +47,7 @@ func RequestTest(CID string, filesAtPeers []datastructures.FilesAtPeers, scores 
 
 	for _, storer := range storers {
 		// maybe parallelize ?
-		ContactPeerForTest(CID, storer, scores)
+		ContactPeerForTest(CID, storer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior)
 	}
 
 }
@@ -72,14 +66,14 @@ func HandleTest(CID string, conn net.Conn) {
 
 }
 
-func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeScore) {
+func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario) {
 
 	/*
 		Function to contact a peer to ask for a test, check answer and update score accordingly
 		Arguments : CID of file to test a string, peer IP as string, scores as array of NodeScore objects
 	*/
 
-	conn, err := net.Dial("tcp", peer+":"+PORT)
+	conn, err := net.Dial("tcp", peer+":"+port)
 	utils.ErrorHandler(err)
 
 	defer conn.Close()
@@ -94,23 +88,23 @@ func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeSco
 
 	go handleResponse(responseChannel, conn)
 
-	timer := time.NewTimer(time.Duration(TIMER_TIMEOUT_SEC) * time.Second)
+	timer := time.NewTimer(time.Duration(timerTimeoutSec) * time.Second)
 
 	select {
 	case <-timer.C:
 		fmt.Println("Timeout: No response received.")
 		// Here, score should be decreased as no response was received
-		decreaseScore(peer, "failedTestTimeout", scores)
+		decreaseScore(peer, "failedTestTimeout", scores, DecreasingBehavior)
 	case response := <-responseChannel:
 		fmt.Println("Response received")
 		// Here, response was received, it should be checked if the response is correct or wrong to decide how score should evolve
 		if checkAnswer(response, CID) {
 			fmt.Println("test passed")
-			increaseScore(peer, "passedTest", scores)
+			increaseScore(peer, "passedTest", scores, IncreasingBehavior)
 			fmt.Println(scores)
 		} else {
 			fmt.Println("test not passed")
-			decreaseScore(peer, "failedTestWrongAns", scores)
+			decreaseScore(peer, "failedTestWrongAns", scores, DecreasingBehavior)
 		}
 	}
 }
@@ -210,7 +204,7 @@ func computeExpectedAnswer(CID string) []byte {
 also unify decreasing and increasing behavior dics into one update doc with signed float64 values
 */
 
-func decreaseScore(peer string, scenario string, scores []datastructures.NodeScore) {
+func decreaseScore(peer string, scenario string, scores []datastructures.NodeScore, DecreasingBehavior []datastructures.ScoreVariationScenario) {
 
 	/*
 		Given a scenario, decrease a peer's score accordingly
@@ -228,7 +222,7 @@ func decreaseScore(peer string, scenario string, scores []datastructures.NodeSco
 
 }
 
-func increaseScore(peer string, scenario string, scores []datastructures.NodeScore) {
+func increaseScore(peer string, scenario string, scores []datastructures.NodeScore, IncreasingBehavior []datastructures.ScoreVariationScenario) {
 
 	/*
 		Given a scenario, increase a peer's score accordingly

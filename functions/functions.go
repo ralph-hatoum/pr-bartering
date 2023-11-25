@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	api_ipfs "bartering/api-ipfs"
+	configextractor "bartering/config-extractor"
 	datastructures "bartering/data-structures"
 	storagerequests "bartering/storage-requests"
 
@@ -51,6 +52,14 @@ func NodeStartup() ([]string, []datastructures.StorageRequest, []datastructures.
 	storedForPeers := []datastructures.FulfilledRequest{}
 
 	return storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers
+}
+
+func IncreaseDecreaseBehaviors(config configextractor.Config) ([]datastructures.ScoreVariationScenario, []datastructures.ScoreVariationScenario) {
+	DecreasingBehavior := []datastructures.ScoreVariationScenario{{Scenario: "failedTestTimeout", Variation: config.StoragetestingFailedTestTimeoutDecrease}, {Scenario: "failedTestWrongAns", Variation: config.StoragetestingFailedTestWrongAnsDecrease}}
+
+	IncreasingBehavior := []datastructures.ScoreVariationScenario{{Scenario: "passedTest", Variation: config.StoragetestingPassedTestIncrease}}
+
+	return DecreasingBehavior, IncreasingBehavior
 }
 
 func initiatePeerStorageUseArray(peers []string, initialStorage float64) []datastructures.PeerStorageUse {

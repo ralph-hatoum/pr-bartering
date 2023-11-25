@@ -42,6 +42,8 @@ func main() {
 
 	var wg sync.WaitGroup // Import "sync" package to use WaitGroup.
 
+	DecreaseBehavior, IncreaseBehavior := functions.IncreaseDecreaseBehaviors(config)
+
 	wg.Add(1)
 
 	go func() {
@@ -59,7 +61,7 @@ func main() {
 	fmt.Println("Waiting 10 secs to request proof ...")
 	time.Sleep(10 * time.Second)
 
-	storagetesting.ContactPeerForTest(storage_request.CID, "127.0.0.1", scores)
+	storagetesting.ContactPeerForTest(storage_request.CID, "127.0.0.1", scores, config.StoragetestingTimerTimeoutSec, port, DecreaseBehavior, IncreaseBehavior)
 
 	fmt.Println("scores after test : ", scores)
 
