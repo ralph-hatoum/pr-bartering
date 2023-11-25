@@ -6,7 +6,6 @@ import (
 	api_ipfs "bartering/api-ipfs"
 	configextractor "bartering/config-extractor"
 	datastructures "bartering/data-structures"
-	storagerequests "bartering/storage-requests"
 
 	bootstrapconnect "bartering/bootstrap-connect"
 
@@ -128,7 +127,7 @@ func Store(path string, storage_pool []string, pending_requests []datastructures
 
 	fmt.Println(file_size)
 
-	storage_request := datastructures.StorageRequest{CID, file_size}
+	storage_request := datastructures.StorageRequest{CID: CID, FileSize: file_size}
 
 	pending_requests = append(pending_requests, storage_request)
 
@@ -153,11 +152,11 @@ func createStorageRequestsLists() ([]string, []datastructures.StorageRequest, []
 
 }
 
-func propagateToPeers(storageRequest datastructures.StorageRequest) {
-	messageToPropagate := storagerequests.BuildStorageRequestMessage(storageRequest)
-	fmt.Println(messageToPropagate)
+// func propagateToPeers(storageRequest datastructures.StorageRequest) {
+// 	messageToPropagate := storagerequests.BuildStorageRequestMessage(storageRequest)
+// 	fmt.Println(messageToPropagate)
 
-	// Choose peers to propagate to
-	// send request, await accept ?
-	// If refuse or no answer, make better offer ?
-}
+// 	// Choose peers to propagate to
+// 	// send request, await accept ?
+// 	// If refuse or no answer, make better offer ?
+// }
