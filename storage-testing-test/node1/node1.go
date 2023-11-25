@@ -38,7 +38,7 @@ func main() {
 	fmt.Println("ratios at peers : ", ratiosAtPeers)
 	fmt.Println("stored for peers : ", storedForPeers)
 	fmt.Println("")
-	fmt.Println("Node started ! Listening on port ", PORT)
+	fmt.Println("Node started ! Listening on port ", port)
 
 	var wg sync.WaitGroup // Import "sync" package to use WaitGroup.
 
@@ -51,7 +51,7 @@ func main() {
 
 	storage_request := datastructures.StorageRequest{CID: "QmV9tSDx9UiPeWExXEeH6aoDvmihvx6jD5eLb4jbTaKGps", FileSize: 5.5}
 
-	storagerequests.RequestStorageFromPeer("127.0.0.1", storage_request, "8081", bytesAtPeers, scores, &fulfilled_requests)
+	storagerequests.RequestStorageFromPeer("127.0.0.1", storage_request, "8081", bytesAtPeers, scores, &fulfilled_requests, config.StoragerequestsScoreDecreaseRefusedStoReq)
 
 	fmt.Println("fulfilled requests : ", fulfilled_requests)
 	fmt.Println("bytesAtPeers : ", bytesAtPeers)

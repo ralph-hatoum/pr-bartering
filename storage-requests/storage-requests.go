@@ -13,8 +13,6 @@ import (
 	"strings"
 )
 
-var SCORE_DECREASE_REFUSED_STO_REQ = 0.8
-
 func BuildStorageRequestMessage(storageRequest datastructures.StorageRequest) string {
 
 	/*
@@ -65,7 +63,7 @@ func updateFulfilledRequests(CID string, peer string, fulfilledRequests *[]datas
 
 }
 
-func RequestStorageFromPeer(peer string, storageRequest datastructures.StorageRequest, port string, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, fulfilledRequests *[]datastructures.FulfilledRequest) {
+func RequestStorageFromPeer(peer string, storageRequest datastructures.StorageRequest, port string, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, fulfilledRequests *[]datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64) {
 
 	/*
 		Function to request storage from a peer
@@ -95,11 +93,11 @@ func RequestStorageFromPeer(peer string, storageRequest datastructures.StorageRe
 		updateFulfilledRequests(storageRequest.CID, peer, fulfilledRequests)
 	} else if responseString == "KO\n" {
 		fmt.Println("Storage refused by node, decreasing score")
-		updatePeerScoreRefusedRq(scores, peer)
+		updatePeerScoreRefusedRq(scores, peer, scoreDecreaseRefStoReq)
 	}
 }
 
-func updatePeerScoreRefusedRq(scores []datastructures.NodeScore, peer string) {
+func updatePeerScoreRefusedRq(scores []datastructures.NodeScore, peer string, scoreDecreaseRefStoReq float64) {
 
 	/*
 		Function used to update the peer score (decrease it) upon refusing a storage request
@@ -108,7 +106,7 @@ func updatePeerScoreRefusedRq(scores []datastructures.NodeScore, peer string) {
 
 	for index, peerScore := range scores {
 		if peerScore.NodeIP == peer {
-			scores[index].Score -= SCORE_DECREASE_REFUSED_STO_REQ
+			scores[index].Score -= scoreDecreaseRefStoReq
 		}
 	}
 }
