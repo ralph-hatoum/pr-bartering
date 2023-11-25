@@ -46,7 +46,7 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers)
+		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio)
 	}()
 
 	to_request, err := storagerequests.ElectStorageNodes(scores, 3)

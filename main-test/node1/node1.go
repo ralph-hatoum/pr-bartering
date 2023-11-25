@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	configextractor "bartering/config-extractor"
 	datastructures "bartering/data-structures"
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
@@ -16,6 +17,11 @@ var NodeStorage float64
 var port = "8083"
 
 func main() {
+
+	fmt.Println("Extracting configuration")
+	config := configextractor.ConfigExtractor("config.yaml")
+
+	configextractor.ConfigPrinter(config)
 
 	// storage_pool, pending_requests, fulfilled_storage, peers := functions.NodeStartup()
 	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers := functions.NodeStartup()
@@ -34,15 +40,13 @@ func main() {
 	fmt.Println("")
 	fmt.Println("Node started ! Listening on port ", port)
 
-	// functions.Store(path, storage_pool, pending_requests)
-
 	var wg sync.WaitGroup // Import "sync" package to use WaitGroup.
 
 	wg.Add(1)
 
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers)
+		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio)
 	}()
 
 	to_request, err := storagerequests.ElectStorageNodes(scores, 1)

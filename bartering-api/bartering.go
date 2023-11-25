@@ -7,28 +7,13 @@ import (
 	"io"
 	"net"
 	"strconv"
-	"sync"
 
 	// "bartering/functions"
 	datastructures "bartering/data-structures"
 	"bartering/utils"
 )
 
-var InitScore = 10.0
-
-var AcceptanceTolerance = 0.5
-
-var AcceptanceToleranceMutex sync.Mutex
-
-var NodeTotalStorageSpace = 200
-
-var RatioIncreaseRate = 0.1
-
-var factorAcceptableRatio = 0.3
-
-var PORT = "8084"
-
-func InitiateBarter(peer string, ratios []datastructures.NodeRatio) error {
+func InitiateBarter(peer string, ratios []datastructures.NodeRatio, ratioIncreaseRate float64, port string) error {
 
 	/*
 		Function to barter the storage ratio
@@ -41,11 +26,11 @@ func InitiateBarter(peer string, ratios []datastructures.NodeRatio) error {
 		return errors.New(err.Error())
 	}
 
-	newRatio := calculateNewRatio(currentRatio)
+	newRatio := calculateNewRatio(currentRatio, ratioIncreaseRate)
 
 	barterMessage := "BarRq" + strconv.FormatFloat(newRatio, 'f', -1, 64)
 
-	response := contactNodeForBarter(peer, barterMessage)
+	response := contactNodeForBarter(peer, barterMessage, port)
 
 	if response == "OK\n" {
 		// update that ratio value
@@ -60,7 +45,7 @@ func InitiateBarter(peer string, ratios []datastructures.NodeRatio) error {
 	return nil
 }
 
-func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, conn net.Conn, ratios []datastructures.NodeRatio) {
+func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, conn net.Conn, ratios []datastructures.NodeRatio, factorAcceptableRatio float64) {
 
 	/*
 		Function to answer a barter request
@@ -73,7 +58,7 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 	barterMsg_ratio, err := strconv.ParseFloat(barterMsg_ratioRq, 64)
 	utils.ErrorHandler(err)
 
-	if shouldRatioBeAccepted(barterMsg_ratio, peer, storageSpace, bytesAtPeers, scores) {
+	if shouldRatioBeAccepted(barterMsg_ratio, peer, storageSpace, bytesAtPeers, scores, factorAcceptableRatio) {
 		fmt.Println("New ratio is accepted -- sending OK to other peer")
 		_, err := io.WriteString(conn, "OK\n")
 		if err != nil {
@@ -87,7 +72,7 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 	} else {
 		// formulate new ratio proposition
 		fmt.Println("New ratio should not be accepted -- sending another proposition to the peer")
-		newRatio := formulateBarterResponse(peer, scores, storageSpace, bytesAtPeers)
+		newRatio := formulateBarterResponse(peer, scores, storageSpace, bytesAtPeers, factorAcceptableRatio)
 		fmt.Println("New ratio :", newRatio)
 		toSend := fmt.Sprintf("%f\n", newRatio)
 		_, err = io.WriteString(conn, toSend)
@@ -129,7 +114,7 @@ func FindNodeRatio(ratios []datastructures.NodeRatio, peer string) (float64, err
 
 }
 
-func formulateBarterResponse(peer string, scores []datastructures.NodeScore, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse) float64 {
+func formulateBarterResponse(peer string, scores []datastructures.NodeScore, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse, factorAcceptableRatio float64) float64 {
 
 	/*
 		Function to counter barter in case the other node's proposition is not acceptable
@@ -137,11 +122,11 @@ func formulateBarterResponse(peer string, scores []datastructures.NodeScore, sto
 		Returns : new ratio as float64
 	*/
 
-	maxPossible := calculateMaxAcceptableRatio(peer, scores, storageSpace, bytesAtPeers)
+	maxPossible := calculateMaxAcceptableRatio(peer, scores, storageSpace, bytesAtPeers, factorAcceptableRatio)
 	return maxPossible
 }
 
-func calculateNewRatio(ratio float64) float64 {
+func calculateNewRatio(ratio float64, ratioIncreaseRate float64) float64 {
 
 	/*
 		Function to  calculate the new ratio to use
@@ -149,10 +134,10 @@ func calculateNewRatio(ratio float64) float64 {
 		Returns : new ratio as float64
 	*/
 
-	return ratio * (1 + RatioIncreaseRate)
+	return ratio * (1 + ratioIncreaseRate)
 }
 
-func shouldRatioBeAccepted(ratio float64, peer string, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore) bool {
+func shouldRatioBeAccepted(ratio float64, peer string, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, factorAcceptableRatio float64) bool {
 
 	/*
 		Function to decided based off score and current storage space if the barter request can be accepted
@@ -167,7 +152,7 @@ func shouldRatioBeAccepted(ratio float64, peer string, storageSpace float64, byt
 		return true
 	}
 
-	return (isRatioTolerableGivenStorageSpace(peer, ratio, storageSpace, bytesAtPeers) && (ratio < calculateMaxAcceptableRatio(peer, scores, storageSpace, bytesAtPeers)))
+	return (isRatioTolerableGivenStorageSpace(peer, ratio, storageSpace, bytesAtPeers) && (ratio < calculateMaxAcceptableRatio(peer, scores, storageSpace, bytesAtPeers, factorAcceptableRatio)))
 }
 
 func shouldResponseRatioBeAccepted(ratio float64) bool {
@@ -214,7 +199,7 @@ func findPeerStorageUse(peer string, bytesAtPeers []datastructures.PeerStorageUs
 	return datastructures.PeerStorageUse{}, errors.New("peer not found")
 }
 
-func calculateMaxAcceptableRatio(peer string, scores []datastructures.NodeScore, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse) float64 {
+func calculateMaxAcceptableRatio(peer string, scores []datastructures.NodeScore, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse, factorAcceptableRatio float64) float64 {
 
 	/*
 		Function to calculate the maximum acceptable ratio given a peer's score
@@ -252,7 +237,7 @@ func findPeerScore(peer string, scores []datastructures.NodeScore) (datastructur
 	return datastructures.NodeScore{}, errors.New("peer not in peers list")
 }
 
-func contactNodeForBarter(peer string, msg string) string {
+func contactNodeForBarter(peer string, msg string, port string) string {
 
 	/*
 		Function to setup tcp connection to contact node to barter ratio
@@ -260,7 +245,7 @@ func contactNodeForBarter(peer string, msg string) string {
 		Returns : string of the peer's response
 	*/
 
-	conn, err := net.Dial("tcp", peer+":"+PORT)
+	conn, err := net.Dial("tcp", peer+":"+port)
 	utils.ErrorHandler(err)
 
 	defer conn.Close()
@@ -275,7 +260,7 @@ func contactNodeForBarter(peer string, msg string) string {
 	return responseString
 }
 
-func InitNodeScores(peers []string) []datastructures.NodeScore {
+func InitNodeScores(peers []string, initScore float64) []datastructures.NodeScore {
 
 	/*
 		Function to initiate node scores
@@ -284,14 +269,14 @@ func InitNodeScores(peers []string) []datastructures.NodeScore {
 	scores := []datastructures.NodeScore{}
 
 	for _, peer := range peers {
-		score := datastructures.NodeScore{NodeIP: peer, Score: InitScore}
+		score := datastructures.NodeScore{NodeIP: peer, Score: initScore}
 		scores = append(scores, score)
 	}
 
 	return scores
 }
 
-func dealWithRefusedRequest(storageRequest datastructures.StorageRequest) {
+func dealWithRefusedRequest(storageRequest datastructures.StorageRequest, nodeTotalStorageSpace int) {
 
 	/*
 		Function to deal with a refused storage request
@@ -299,11 +284,11 @@ func dealWithRefusedRequest(storageRequest datastructures.StorageRequest) {
 		then the tolerance needs to go up
 	*/
 
-	fileSize := storageRequest.FileSize
+	// fileSize := storageRequest.FileSize
 
-	delta := fileSize / float64(NodeTotalStorageSpace)
+	// delta := fileSize / float64(nodeTotalStorageSpace)
 
-	increaseTolerance(delta)
+	// increaseTolerance(delta)
 
 }
 
@@ -314,29 +299,5 @@ func craftNewRq(storageRequest datastructures.StorageRequest) datastructures.Sto
 	*/
 
 	return datastructures.StorageRequest{}
-
-}
-
-func increaseTolerance(delta float64) {
-
-	/*
-		Function to increase tolerance
-	*/
-
-	AcceptanceToleranceMutex.Lock()
-	AcceptanceTolerance += delta
-	AcceptanceToleranceMutex.Unlock()
-
-}
-
-func decreaseTolerance(delta float64) {
-
-	/*
-		Function to decrease tolerance
-	*/
-
-	AcceptanceToleranceMutex.Lock()
-	AcceptanceTolerance -= delta
-	AcceptanceToleranceMutex.Unlock()
 
 }
