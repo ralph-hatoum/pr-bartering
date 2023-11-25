@@ -19,7 +19,7 @@ func main() {
 	fmt.Println("Extracting configuration")
 	config := configextractor.ConfigExtractor("config.yaml")
 
-	fmt.Println(config)
+	configextractor.ConfigPrinter(config)
 
 	// storage_pool, pending_requests, fulfilled_storage, peers := functions.NodeStartup()
 	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers := functions.NodeStartup()
