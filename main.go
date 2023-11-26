@@ -52,8 +52,8 @@ func main() {
 	// utils.ErrorHandler(err)
 	// fmt.Println(to_request)
 
-	fswatcher.FsWatcher("./test-data")
-
+	fswatcher.FsWatcher("./test-data", storage_pool, pending_requests)
+	fmt.Println(pending_requests)
 	// Wait for the goroutine to finish.
 	wg.Wait()
 

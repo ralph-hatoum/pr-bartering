@@ -1,12 +1,15 @@
 package fswatcher
 
 import (
+	datastructures "bartering/data-structures"
+	"bartering/functions"
+	"fmt"
 	"log"
 
 	fsnotify "github.com/fsnotify/fsnotify"
 )
 
-func FsWatcher(path string) {
+func FsWatcher(path string, storage_pool []string, pendingRequests []datastructures.StorageRequest) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
@@ -23,16 +26,23 @@ func FsWatcher(path string) {
 					return
 				}
 				if event.Op&fsnotify.Create == fsnotify.Create {
-					log.Println("Created file:", event.Name)
+					filePath := event.Name
 					// Handle the file creation event
+					fmt.Println("New file ", filePath, " detected, storing on network")
+					go functions.Store(filePath, storage_pool, pendingRequests) // this still does not actually trigger storage on the network
 				}
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					log.Println("Modified file:", event.Name)
 					// Handle the file modification event
+					// basically considered a new file ; so old version should be deleted and new version stored
+					// need to implement a delRq message but security for this will be hard to implement
+					// maybe we should just rely on not renewing the lease
 				}
 				if event.Op&fsnotify.Rename == fsnotify.Rename {
 					log.Println("Removed file:", event.Name)
 					// Handle the file removal event
+					// there is no distinction between file removal and file renaming (renaming is basically just deleting and recreating a file)
+					// in ipfs it is the same logic, not sure if this is problematic
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
