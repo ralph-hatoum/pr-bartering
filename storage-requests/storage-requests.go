@@ -11,6 +11,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func BuildStorageRequestMessage(storageRequest datastructures.StorageRequest) string {
@@ -264,5 +265,19 @@ func CheckEnoughSpace(storageRequest datastructures.StorageRequest, currentStora
 	*/
 
 	return storageRequest.FileSize+float64(currentStorageSpace) < NodeTotalStorageSpace
+
+}
+
+func GarbageCollector(storageDeletionQueue []datastructures.StorageRequestTimed) {
+	for {
+		if len(storageDeletionQueue) != 0 {
+			if storageDeletionQueue[0].DurationMinutes < time.Now() {
+				storageDeletionQueue = storageDeletionQueue[1:]
+			}
+		}
+	}
+}
+
+func appendStorageRequestToDeletionQueue(storageRequest datastructures.StorageRequestTimed, deletionQueue []datastructures.StorageRequestTimed) {
 
 }
