@@ -1,5 +1,7 @@
 package datastructures
 
+import "time"
+
 type NodeScore struct {
 	NodeIP string
 	Score  float64
@@ -29,6 +31,11 @@ type StorageRequestTimed struct {
 	CID             string
 	FileSize        float64
 	DurationMinutes int
+}
+
+type StorageRequestTimedAccepted struct {
+	CID      string
+	Deadline time.Time
 }
 
 type FilesAtPeers struct {

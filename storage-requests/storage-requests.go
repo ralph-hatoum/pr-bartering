@@ -268,16 +268,60 @@ func CheckEnoughSpace(storageRequest datastructures.StorageRequest, currentStora
 
 }
 
-func GarbageCollector(storageDeletionQueue []datastructures.StorageRequestTimed) {
+func GarbageCollector(storageDeletionQueue []datastructures.StorageRequestTimedAccepted) {
+
+	/*
+		Function to run in background to perform garage collection, aka deal with requests that have expired
+		Arguments : storageDeletionQueue (slice of StorageRequestTimedAccepted objects)
+	*/
+
 	for {
 		if len(storageDeletionQueue) != 0 {
-			if storageDeletionQueue[0].DurationMinutes < time.Now() {
-				storageDeletionQueue = storageDeletionQueue[1:]
+			if storageDeletionQueue[0].Deadline.Before(time.Now()) {
+				storageDeletionQueue = garbageCollectionStrategy(storageDeletionQueue)
 			}
 		}
 	}
 }
 
-func appendStorageRequestToDeletionQueue(storageRequest datastructures.StorageRequestTimed, deletionQueue []datastructures.StorageRequestTimed) {
+func garbageCollectionStrategy(storageDeletionQueue []datastructures.StorageRequestTimedAccepted) []datastructures.StorageRequestTimedAccepted {
 
+	/*
+		Garbage collection strategy
+		Essentially, we might not want our node to directly deleted expired requests
+		(for example, only delete when no more storage is available to increase availabilty of data)
+		Strategy should be defined in this function
+		Arguments : storageDeletionQueue (slice of StorageRequestTimedAccepted objects)
+	*/
+	storageDeletionQueue = storageDeletionQueue[1:]
+	return storageDeletionQueue
+}
+
+func appendStorageRequestToDeletionQueue(storageRequest datastructures.StorageRequestTimed, deletionQueue []datastructures.StorageRequestTimed) []datastructures.StorageRequestTimed {
+	index := 0
+	for storageRequest.DurationMinutes < deletionQueue[index].DurationMinutes {
+		index += 1
+	}
+	before := deletionQueue[:index-1]
+	after := deletionQueue[index:]
+	before = append(before, storageRequest)
+	before = append(before, after...)
+	return before
+}
+
+func computeDeadlineFromTimedStorageRequest(storageRequest datastructures.StorageRequestTimed) time.Time {
+
+	timeToAdd := time.Duration(storageRequest.DurationMinutes) * time.Minute
+
+	deadline := time.Now().Add(timeToAdd)
+
+	return deadline
+}
+
+func buildStorageRequestTimedAcceptedObjectFromStorageRequestTimed(storageRequest datastructures.StorageRequestTimed) datastructures.StorageRequestTimedAccepted {
+
+	CID := storageRequest.CID
+	deadline := computeDeadlineFromTimedStorageRequest(storageRequest)
+
+	return datastructures.StorageRequestTimedAccepted{CID: CID, Deadline: deadline}
 }
