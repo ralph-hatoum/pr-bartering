@@ -29,8 +29,7 @@ type StorageRequest struct {
 
 type StorageRequestTimed struct {
 	CID             string
-	FileSize        float64
-	DurationMinutes int
+	DurationMinutes int64
 }
 
 type StorageRequestTimedAccepted struct {

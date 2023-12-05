@@ -184,6 +184,61 @@ func HandleStorageRequest(bufferString string, conn net.Conn, bytesForPeers []da
 
 }
 
+func HandleStorageRequestTimed(bufferString string, conn net.Conn, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest, deletionQueue *[]datastructures.StorageRequestTimedAccepted) {
+
+	/*
+		SHOULD REPLACE HANDLESTORAGEREQUEST FUNC ONCE EVERYTHING IS DONE, TESTED AND WORKING
+		Function to handle a storage message type message
+		Arguments : buffer received through a tcp connection, as a string, net.Conn object, PeerStorageUse array, pointer to fulfilledRequest array
+	*/
+
+	peer := conn.RemoteAddr().(*net.TCPAddr).IP.String()
+	var messageToPeer string
+	fmt.Println("Received storage request")
+	CID := bufferString[5:51]
+	fmt.Println("CID : ", CID)
+	DurationMinutes := bufferString[51:]
+	DurationMinutes = strings.Split(DurationMinutes, "\n")[0]
+	fmt.Println("Request duration (minutes) : ", DurationMinutes)
+
+	DurationMinutesInt, err := strconv.ParseInt(DurationMinutes, 10, 64)
+	utils.ErrorHandler(err)
+
+	request := datastructures.StorageRequestTimed{DurationMinutes: DurationMinutesInt, CID: CID}
+
+	fmt.Println("Storage request : ", request, " ; checking validity ...")
+
+	if CheckRqValidityTimed(request) {
+		fmt.Println("Request ", request, " valid, storing ! ")
+		fmt.Println("Pinning to IPFS ...")
+		api_ipfs.PinToIPFS(CID)
+		fmt.Println("File pinned to IPFS!")
+		messageToPeer = "OK\n"
+		// updateBytesForPeers(bytesForPeers, peer, fileSizeFloat)
+		updateFulfilledRequests(CID, peer, storedForPeers)
+		fmt.Println("stored for peers : ", storedForPeers)
+		requestAccepted := buildStorageRequestTimedAcceptedObjectFromStorageRequestTimed(request)
+		fmt.Println("accepted  timed request : ", requestAccepted)
+		appendStorageRequestToDeletionQueue(requestAccepted, deletionQueue)
+		fmt.Println("deletion queue", deletionQueue)
+	} else {
+		fmt.Println("Request ", request, " not valid, not storing ! ")
+
+		messageToPeer = "KO\n"
+	}
+
+	_, err = io.WriteString(conn, messageToPeer)
+
+	utils.ErrorHandler(err)
+
+}
+
+func CheckRqValidityTimed(storageRequest datastructures.StorageRequestTimed) bool {
+	deadline := computeDeadlineFromTimedStorageRequest(storageRequest)
+
+	return time.Now().Before(deadline)
+}
+
 func ElectStorageNodes(peerScores []datastructures.NodeScore, numberOfNodes int) ([]string, error) {
 
 	/*
@@ -297,16 +352,42 @@ func garbageCollectionStrategy(storageDeletionQueue []datastructures.StorageRequ
 	return storageDeletionQueue
 }
 
-func appendStorageRequestToDeletionQueue(storageRequest datastructures.StorageRequestTimed, deletionQueue []datastructures.StorageRequestTimed) []datastructures.StorageRequestTimed {
-	index := 0
-	for storageRequest.DurationMinutes < deletionQueue[index].DurationMinutes {
-		index += 1
+func appendStorageRequestToDeletionQueue(storageRequest datastructures.StorageRequestTimedAccepted, deletionQueue *[]datastructures.StorageRequestTimedAccepted) {
+
+	sortedSlice := *deletionQueue
+
+	if len(sortedSlice) == 0 {
+		sortedSlice = append(sortedSlice, storageRequest)
+		*deletionQueue = sortedSlice
+		return
 	}
-	before := deletionQueue[:index-1]
-	after := deletionQueue[index:]
-	before = append(before, storageRequest)
-	before = append(before, after...)
-	return before
+	i := len(sortedSlice) - 1
+	for i >= 0 && storageRequest.Deadline.Before(sortedSlice[i].Deadline) {
+		fmt.Println(i)
+		sortedSlice[i+1] = sortedSlice[i]
+		i--
+	}
+
+	sortedSlice[i+1] = storageRequest
+	*deletionQueue = sortedSlice
+
+	// fmt.Println("queue before appending : ", queue)
+
+	// if len(queue) == 0 {
+	// 	new := append(queue, storageRequest)
+	// 	*deletionQueue = new
+	// 	return
+	// }
+
+	// index := 0
+	// for storageRequest.Deadline.After(queue[index].Deadline) {
+	// 	index += 1
+	// }
+	// before := append([]datastructures.StorageRequestTimedAccepted{}, queue[:index]...)
+	// after := append([]datastructures.StorageRequestTimedAccepted{}, queue[index:]...)
+	// newQueue := append(before, storageRequest)
+	// newQueue = append(newQueue, after...)
+	// *deletionQueue = newQueue
 }
 
 func computeDeadlineFromTimedStorageRequest(storageRequest datastructures.StorageRequestTimed) time.Time {
