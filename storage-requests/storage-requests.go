@@ -362,11 +362,15 @@ func appendStorageRequestToDeletionQueue(storageRequest datastructures.StorageRe
 		return
 	}
 	i := len(sortedSlice) - 1
-	for i >= 0 && storageRequest.Deadline.Before(sortedSlice[i].Deadline) {
-		fmt.Println(i)
-		sortedSlice[i+1] = sortedSlice[i]
+	// fmt.Println("lenght of sorted slice : ", len(sortedSlice))
+	// fmt.Println("value of i : ", i)
+	// fmt.Println("printed element of sortedSlice : ", sortedSlice[i].Deadline)
+	for i >= 0 && storageRequest.Deadline.After(sortedSlice[i].Deadline) {
+		// sortedSlice[i+1] = sortedSlice[i]
 		i--
 	}
+
+	fmt.Println("index to add at : ", i)
 
 	sortedSlice[i+1] = storageRequest
 	*deletionQueue = sortedSlice
