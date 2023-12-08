@@ -333,13 +333,14 @@ func GarbageCollector(storageDeletionQueue []datastructures.StorageRequestTimedA
 	for {
 		if len(storageDeletionQueue) != 0 {
 			if storageDeletionQueue[0].Deadline.Before(time.Now()) {
-				storageDeletionQueue = garbageCollectionStrategy(storageDeletionQueue)
+				storageDeletionQueue = GarbageCollectionStrategy(storageDeletionQueue)
 			}
 		}
 	}
+
 }
 
-func garbageCollectionStrategy(storageDeletionQueue []datastructures.StorageRequestTimedAccepted) []datastructures.StorageRequestTimedAccepted {
+func GarbageCollectionStrategy(storageDeletionQueue []datastructures.StorageRequestTimedAccepted) []datastructures.StorageRequestTimedAccepted {
 
 	/*
 		Garbage collection strategy
@@ -348,30 +349,42 @@ func garbageCollectionStrategy(storageDeletionQueue []datastructures.StorageRequ
 		Strategy should be defined in this function
 		Arguments : storageDeletionQueue (slice of StorageRequestTimedAccepted objects)
 	*/
-	storageDeletionQueue = storageDeletionQueue[1:]
+	if len(storageDeletionQueue) != 0 {
+		storageDeletionQueue = storageDeletionQueue[1:]
+	}
 	return storageDeletionQueue
 }
 
 func AppendStorageRequestToDeletionQueue(storageRequest datastructures.StorageRequestTimedAccepted, deletionQueue *[]datastructures.StorageRequestTimedAccepted) {
+
 	queue := *deletionQueue
 	newQueue := AuxInsertInSortedList(storageRequest, queue)
 	*deletionQueue = newQueue
+
 }
 
 func AuxInsertInSortedList(storageRequest datastructures.StorageRequestTimedAccepted, queue []datastructures.StorageRequestTimedAccepted) []datastructures.StorageRequestTimedAccepted {
+
 	if len(queue) == 0 {
+
 		queue = append(queue, storageRequest)
 		return queue
+
 	} else {
+
 		if storageRequest.Deadline.After(queue[0].Deadline) {
+
 			newQueue := AuxInsertInSortedList(storageRequest, queue[1:])
 			head := []datastructures.StorageRequestTimedAccepted{queue[0]}
 			newQueue = append(head, newQueue...)
 			return newQueue
+
 		} else {
+
 			newQueue := []datastructures.StorageRequestTimedAccepted{storageRequest}
 			newQueue = append(newQueue, queue...)
 			return newQueue
+
 		}
 	}
 }

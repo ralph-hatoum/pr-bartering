@@ -53,3 +53,24 @@ func TestAppendStorageRequestToDeletionQueue(t *testing.T) {
 	}
 
 }
+
+func TestGarbageCollectionStrategy(t *testing.T) {
+
+	storageDeletionQueue := []datastructures.StorageRequestTimedAccepted{}
+	i := 0
+	for i < 3 {
+		storageRequest := datastructures.StorageRequestTimedAccepted{CID: "blablabla" + fmt.Sprint(i), Deadline: time.Now()}
+		storageDeletionQueue = append(storageDeletionQueue, storageRequest)
+		i += 1
+	}
+
+	for i >= 0 {
+		storageDeletionQueue = GarbageCollectionStrategy(storageDeletionQueue)
+		i -= 1
+	}
+
+	if len(storageDeletionQueue) != 0 {
+		t.Errorf("garbage collection strategy not behaving properly")
+	}
+
+}
