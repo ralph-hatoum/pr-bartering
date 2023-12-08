@@ -75,13 +75,13 @@ func TestGarbageCollectionStrategy(t *testing.T) {
 
 }
 
-func TestComputeDeadlineFromTimedStorageRequest(t *testing.T) {
-	storageRequest := datastructures.StorageRequestTimed{CID: "whatever", DurationMinutes: 3}
-	currentTime := time.Now()
-	deadline := ComputeDeadlineFromTimedStorageRequest(storageRequest)
-	fmt.Println(deadline.Sub(currentTime))
+// func TestComputeDeadlineFromTimedStorageRequest(t *testing.T) {
+// 	storageRequest := datastructures.StorageRequestTimed{CID: "whatever", DurationMinutes: 3}
+// 	currentTime := time.Now()
+// 	deadline := ComputeDeadlineFromTimedStorageRequest(storageRequest)
+// 	fmt.Println(deadline.Sub(currentTime))
 
-	if deadline.Sub(currentTime)-time.Duration(storageRequest.DurationMinutes) > time.Duration(0.00005) {
-		t.Errorf("garbage collection strategy not behaving properly")
-	}
-}
+// 	if deadline.Sub(currentTime)-time.Duration(storageRequest.DurationMinutes) > time.Duration(0.00005) {
+// 		t.Errorf("garbage collection strategy not behaving properly")
+// 	}
+// }

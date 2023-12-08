@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	configextractor "bartering/config-extractor"
+	datastructures "bartering/data-structures"
 	"bartering/functions"
 
 	peersconnect "bartering/peers-connect"
@@ -43,10 +44,10 @@ func main() {
 	var wg sync.WaitGroup
 
 	wg.Add(1)
-
+	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(PORT, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio)
+		peersconnect.ListenPeersRequestsTCP(PORT, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue)
 	}()
 
 	err := bartering.InitiateBarter("127.0.0.1", ratiosAtPeers, config.BarteringRatioIncreaseRate, PORT)

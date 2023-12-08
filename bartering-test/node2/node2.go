@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	configextractor "bartering/config-extractor"
+	datastructures "bartering/data-structures"
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
 )
@@ -38,12 +39,12 @@ func main() {
 	fmt.Println("Node started ! Listening on port ", PORT)
 
 	var wg sync.WaitGroup
-
+	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 	wg.Add(1)
 
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(PORT, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio)
+		peersconnect.ListenPeersRequestsTCP(PORT, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue)
 	}()
 
 	wg.Wait()

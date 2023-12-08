@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	configextractor "bartering/config-extractor"
+	datastructures "bartering/data-structures"
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
 )
@@ -37,12 +38,12 @@ func main() {
 	fmt.Println("Node started ! Listening on port ", port)
 
 	var wg sync.WaitGroup // Import "sync" package to use WaitGroup.
-
+	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 	wg.Add(1)
 
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio)
+		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue)
 	}()
 
 	// Wait for the goroutine to finish.

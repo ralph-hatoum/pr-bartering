@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	configextractor "bartering/config-extractor"
+	datastructures "bartering/data-structures"
 	fswatcher "bartering/fs-watcher"
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
@@ -42,10 +43,10 @@ func main() {
 	var wg sync.WaitGroup // Import "sync" package to use WaitGroup.
 
 	wg.Add(1)
-
+	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio)
+		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue)
 	}()
 
 	// to_request, err := storagerequests.ElectStorageNodes(scores, 3)
