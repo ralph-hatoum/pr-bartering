@@ -384,13 +384,13 @@ func appendStorageRequestToDeletionQueue(storageRequest datastructures.StorageRe
 	// *deletionQueue = newQueue
 }
 
-func auxInsertInSortedList(storageRequest datastructures.StorageRequestTimedAccepted, queue []datastructures.StorageRequestTimedAccepted) []datastructures.StorageRequestTimedAccepted {
+func AuxInsertInSortedList(storageRequest datastructures.StorageRequestTimedAccepted, queue []datastructures.StorageRequestTimedAccepted) []datastructures.StorageRequestTimedAccepted {
 	if len(queue) == 0 {
 		queue = append(queue, storageRequest)
 		return queue
 	} else {
 		if storageRequest.Deadline.After(queue[0].Deadline) {
-			newQueue := auxInsertInSortedList(storageRequest, queue[1:])
+			newQueue := AuxInsertInSortedList(storageRequest, queue[1:])
 			head := []datastructures.StorageRequestTimedAccepted{queue[0]}
 			newQueue = append(head, newQueue...)
 			return newQueue

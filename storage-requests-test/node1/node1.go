@@ -5,10 +5,7 @@ import (
 	"sync"
 
 	configextractor "bartering/config-extractor"
-	datastructures "bartering/data-structures"
 	"bartering/functions"
-	peersconnect "bartering/peers-connect"
-	storagerequests "bartering/storage-requests"
 )
 
 var NodeStorage float64
@@ -42,18 +39,18 @@ func main() {
 
 	wg.Add(1)
 
-	go func() {
-		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio)
-	}()
+	// go func() {
+	// 	defer wg.Done()
+	// 	peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio)
+	// }()
 
-	stoRq := datastructures.StorageRequest{CID: "QmV9tSDx9UiPeWExXEeH6aoDvmihvx6jD5eLb4jbTaKGps", FileSize: 5.0}
+	// stoRq := datastructures.StorageRequest{CID: "QmV9tSDx9UiPeWExXEeH6aoDvmihvx6jD5eLb4jbTaKGps", FileSize: 5.0}
 
-	storagerequests.RequestStorageFromPeer("127.0.0.1", stoRq, "8084", bytesAtPeers, scores, &fulfilled_requests, config.StoragerequestsScoreDecreaseRefusedStoReq)
-	fmt.Println(bytesAtPeers)
-	fmt.Println(scores)
-	fmt.Println("fulfilled requests :", fulfilled_requests)
-	// Wait for the goroutine to finish.
+	// storagerequests.RequestStorageFromPeer("127.0.0.1", stoRq, "8084", bytesAtPeers, scores, &fulfilled_requests, config.StoragerequestsScoreDecreaseRefusedStoReq)
+	// fmt.Println(bytesAtPeers)
+	// fmt.Println(scores)
+	// fmt.Println("fulfilled requests :", fulfilled_requests)
+	// // Wait for the goroutine to finish.
 	wg.Wait()
 
 }
