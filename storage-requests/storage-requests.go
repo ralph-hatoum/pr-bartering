@@ -353,27 +353,17 @@ func garbageCollectionStrategy(storageDeletionQueue []datastructures.StorageRequ
 }
 
 func appendStorageRequestToDeletionQueue(storageRequest datastructures.StorageRequestTimedAccepted, deletionQueue *[]datastructures.StorageRequestTimedAccepted) {
-
-	sortedSlice := *deletionQueue
-
-	if len(sortedSlice) == 0 {
-		sortedSlice = append(sortedSlice, storageRequest)
-		*deletionQueue = sortedSlice
-		return
+	queue := *deletionQueue
+	if len(*deletionQueue) == 0 {
+		newQueue := append(*deletionQueue, storageRequest)
+		*deletionQueue = newQueue
+	} else {
+		if storageRequest.Deadline.After(queue[0].Deadline) {
+			// here should append to queue[1:]
+		} else {
+			// newQueue :=
+		}
 	}
-	i := len(sortedSlice) - 1
-	// fmt.Println("lenght of sorted slice : ", len(sortedSlice))
-	// fmt.Println("value of i : ", i)
-	// fmt.Println("printed element of sortedSlice : ", sortedSlice[i].Deadline)
-	for i >= 0 && storageRequest.Deadline.After(sortedSlice[i].Deadline) {
-		// sortedSlice[i+1] = sortedSlice[i]
-		i--
-	}
-
-	fmt.Println("index to add at : ", i)
-
-	sortedSlice[i+1] = storageRequest
-	*deletionQueue = sortedSlice
 
 	// fmt.Println("queue before appending : ", queue)
 
@@ -392,6 +382,24 @@ func appendStorageRequestToDeletionQueue(storageRequest datastructures.StorageRe
 	// newQueue := append(before, storageRequest)
 	// newQueue = append(newQueue, after...)
 	// *deletionQueue = newQueue
+}
+
+func auxInsertInSortedList(storageRequest datastructures.StorageRequestTimedAccepted, queue []datastructures.StorageRequestTimedAccepted) []datastructures.StorageRequestTimedAccepted {
+	if len(queue) == 0 {
+		queue = append(queue, storageRequest)
+		return queue
+	} else {
+		if storageRequest.Deadline.After(queue[0].Deadline) {
+			newQueue := auxInsertInSortedList(storageRequest, queue[1:])
+			head := []datastructures.StorageRequestTimedAccepted{queue[0]}
+			newQueue = append(head, newQueue...)
+			return newQueue
+		} else {
+			newQueue := []datastructures.StorageRequestTimedAccepted{storageRequest}
+			newQueue = append(newQueue, queue...)
+			return newQueue
+		}
+	}
 }
 
 func computeDeadlineFromTimedStorageRequest(storageRequest datastructures.StorageRequestTimed) time.Time {
