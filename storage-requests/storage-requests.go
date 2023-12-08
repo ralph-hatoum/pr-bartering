@@ -234,7 +234,7 @@ func HandleStorageRequestTimed(bufferString string, conn net.Conn, bytesForPeers
 }
 
 func CheckRqValidityTimed(storageRequest datastructures.StorageRequestTimed) bool {
-	deadline := computeDeadlineFromTimedStorageRequest(storageRequest)
+	deadline := ComputeDeadlineFromTimedStorageRequest(storageRequest)
 
 	return time.Now().Before(deadline)
 }
@@ -389,7 +389,7 @@ func AuxInsertInSortedList(storageRequest datastructures.StorageRequestTimedAcce
 	}
 }
 
-func computeDeadlineFromTimedStorageRequest(storageRequest datastructures.StorageRequestTimed) time.Time {
+func ComputeDeadlineFromTimedStorageRequest(storageRequest datastructures.StorageRequestTimed) time.Time {
 
 	timeToAdd := time.Duration(storageRequest.DurationMinutes) * time.Minute
 
@@ -401,7 +401,7 @@ func computeDeadlineFromTimedStorageRequest(storageRequest datastructures.Storag
 func buildStorageRequestTimedAcceptedObjectFromStorageRequestTimed(storageRequest datastructures.StorageRequestTimed) datastructures.StorageRequestTimedAccepted {
 
 	CID := storageRequest.CID
-	deadline := computeDeadlineFromTimedStorageRequest(storageRequest)
+	deadline := ComputeDeadlineFromTimedStorageRequest(storageRequest)
 
 	return datastructures.StorageRequestTimedAccepted{CID: CID, Deadline: deadline}
 }
