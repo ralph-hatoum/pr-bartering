@@ -219,7 +219,7 @@ func HandleStorageRequestTimed(bufferString string, conn net.Conn, bytesForPeers
 		fmt.Println("stored for peers : ", storedForPeers)
 		requestAccepted := buildStorageRequestTimedAcceptedObjectFromStorageRequestTimed(request)
 		fmt.Println("accepted  timed request : ", requestAccepted)
-		appendStorageRequestToDeletionQueue(requestAccepted, deletionQueue)
+		AppendStorageRequestToDeletionQueue(requestAccepted, deletionQueue)
 		fmt.Println("deletion queue", deletionQueue)
 	} else {
 		fmt.Println("Request ", request, " not valid, not storing ! ")
@@ -352,36 +352,10 @@ func garbageCollectionStrategy(storageDeletionQueue []datastructures.StorageRequ
 	return storageDeletionQueue
 }
 
-func appendStorageRequestToDeletionQueue(storageRequest datastructures.StorageRequestTimedAccepted, deletionQueue *[]datastructures.StorageRequestTimedAccepted) {
+func AppendStorageRequestToDeletionQueue(storageRequest datastructures.StorageRequestTimedAccepted, deletionQueue *[]datastructures.StorageRequestTimedAccepted) {
 	queue := *deletionQueue
-	if len(*deletionQueue) == 0 {
-		newQueue := append(*deletionQueue, storageRequest)
-		*deletionQueue = newQueue
-	} else {
-		if storageRequest.Deadline.After(queue[0].Deadline) {
-			// here should append to queue[1:]
-		} else {
-			// newQueue :=
-		}
-	}
-
-	// fmt.Println("queue before appending : ", queue)
-
-	// if len(queue) == 0 {
-	// 	new := append(queue, storageRequest)
-	// 	*deletionQueue = new
-	// 	return
-	// }
-
-	// index := 0
-	// for storageRequest.Deadline.After(queue[index].Deadline) {
-	// 	index += 1
-	// }
-	// before := append([]datastructures.StorageRequestTimedAccepted{}, queue[:index]...)
-	// after := append([]datastructures.StorageRequestTimedAccepted{}, queue[index:]...)
-	// newQueue := append(before, storageRequest)
-	// newQueue = append(newQueue, after...)
-	// *deletionQueue = newQueue
+	newQueue := AuxInsertInSortedList(storageRequest, queue)
+	*deletionQueue = newQueue
 }
 
 func AuxInsertInSortedList(storageRequest datastructures.StorageRequestTimedAccepted, queue []datastructures.StorageRequestTimedAccepted) []datastructures.StorageRequestTimedAccepted {
