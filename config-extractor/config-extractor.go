@@ -24,6 +24,8 @@ type Config struct {
 	StoragetestingFailedTestTimeoutDecrease   float64 `yaml:"StoragetestingFailedTestTimeoutDecrease"`
 	StoragetestingFailedTestWrongAnsDecrease  float64 `yaml:"StoragetestingFailedTestWrongAnsDecrease"`
 	StoragetestingPassedTestIncrease          float64 `yaml:"StoragetestingPassedTestIncrease"`
+	FailureModel                              string  `yaml:"FailureModel"`
+	NodeProfile                               string  `yaml:"NodeProfile"`
 }
 
 func ConfigExtractor(path string) Config {
@@ -64,6 +66,8 @@ func ConfigPrinter(conf Config) {
 	Score decrease upon failed test in case of timeout : %f
 	Score decrease upon failed test in case of wrong answer : %f
 	Score increase upon succesful test : %f
+	Failure mode : %s
+	Node profile : %s
 	`, conf.Port,
 		conf.TotalStorage,
 		conf.BarteringInitialScore,
@@ -74,7 +78,9 @@ func ConfigPrinter(conf Config) {
 		conf.StoragetestingTestingPeriod,
 		conf.StoragetestingFailedTestTimeoutDecrease,
 		conf.StoragetestingFailedTestWrongAnsDecrease,
-		conf.StoragetestingPassedTestIncrease)
+		conf.StoragetestingPassedTestIncrease,
+		conf.FailureModel,
+		conf.NodeProfile)
 
 	fmt.Println(toPrint)
 }

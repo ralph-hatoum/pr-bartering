@@ -15,3 +15,6 @@ StoragetestingTestingPeriod: 20
 StoragetestingFailedTestTimeoutDecrease: 0.5
 StoragetestingFailedTestWrongAnsDecrease: 0.7
 StoragetestingPassedTestIncrease: 0.2
+
+FailureModel : "weibull"
+NodeProfile : "peer"
