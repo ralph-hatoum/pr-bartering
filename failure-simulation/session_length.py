@@ -19,10 +19,19 @@ def plot_weibull():
     plt.show()
 
 
+def simulate_failure(nb_epochs):
+    t=0
+    while t<nb_epochs:
+        wait_time = np.random.weibull(shape)
+        print(wait_time)
+        t = nb_epochs
+
+
 def node_availability_graph(nb_epochs):
     t = list(range(nb_epochs))
-    flag = 
+
     for i in range(nb_epochs):
         availability = np.random.weibull(shape, num_sessions) * scale
+        
 
-plot_weibull()
+simulate_failure(100)
