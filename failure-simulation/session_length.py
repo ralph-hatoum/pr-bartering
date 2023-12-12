@@ -41,7 +41,7 @@ def simulate_failure(nb_epochs: int, probability_law: str):
     plt.xlabel("Epoch")
     plt.ylabel("Up or down")
     plt.plot(x_values, y_values,"x")
-    plt.title("Failure chart (Weibull model)")
+    plt.title(f"Failure chart ({probability_law} model, shape factor {shape}, scale factor {scale}), \n connectivity {c_f}")
     plt.show()      
 
 
