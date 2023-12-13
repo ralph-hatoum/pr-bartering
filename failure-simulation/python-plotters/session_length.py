@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-shape = 1.5  # Adjust for heavy or light tail
+shape = 1.0  # Adjust for heavy or light tail
 
 # Number of sessions to generate
 num_sessions = 100000  # Adjust as needed
@@ -13,7 +13,7 @@ def simulate_failure(nb_epochs: int, probability_law: str, number_of_runs: int):
     elif probability_law == "lognormal":
         get_session_length = get_session_length_in_epochs_lognormal
     
-    c_f = 0.5
+    c_f = 0.75
 
     x_values = []
     y_values= []
@@ -66,4 +66,4 @@ def get_session_length_in_epochs_lognormal(shape, scale):
 
 
 
-simulate_failure(1000,"weibull",2)
+simulate_failure(3000,"lognormal",2)
