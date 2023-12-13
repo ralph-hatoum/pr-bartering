@@ -6,7 +6,7 @@ shape = 1.5  # Adjust for heavy or light tail
 # Number of sessions to generate
 num_sessions = 100000  # Adjust as needed
 
-def simulate_failure(nb_epochs: int, probability_law: str):
+def simulate_failure(nb_epochs: int, probability_law: str, number_of_runs: int):
 
     if probability_law == "weibull":
         get_session_length = get_session_length_in_epochs_weibull
@@ -16,32 +16,42 @@ def simulate_failure(nb_epochs: int, probability_law: str):
     c_f = 0.5
 
     x_values = []
-    y_values = []
+    y_values= []
 
-    t=0
+    fig, axs = plt.subplots(1, number_of_runs, sharex=False, figsize=(8, 6))
+    print(axs)
+    for k in range(number_of_runs):
+        y_values.append([])
 
-    scale = 100
+        t=0
 
-    while t<nb_epochs: 
+        scale = 100
 
-        session_length = get_session_length(shape, scale)
+        while t<nb_epochs: 
 
-        downtime = get_downtime_from_session_length(session_length, c_f)
+            session_length = get_session_length(shape, scale)
 
-        for _ in range(session_length):
-            x_values.append(t)
-            t+=1
-            y_values.append(1)
+            downtime = get_downtime_from_session_length(session_length, c_f)
 
-        for _ in range(downtime):
-            x_values.append(t)
-            t+=1
-            y_values.append(0)
+            for _ in range(session_length):
+                x_values.append(t)
+                t+=1
+                y_values[k].append(1)
+
+            for _ in range(downtime):
+                x_values.append(t)
+                t+=1
+                y_values[k].append(0)
+        
+        axs[k].plot(x_values, y_values[k],"x")
+        axs[k].set_title(f"Run {k}")
+        axs[k].set_xlabel("Epoch")
+        axs[k].set_ylabel("Up or down")
+
+        x_values = []
     
-    plt.xlabel("Epoch")
-    plt.ylabel("Up or down")
-    plt.plot(x_values, y_values,"x")
-    plt.title(f"Failure chart ({probability_law} model, shape factor {shape}, scale factor {scale}), \n connectivity {c_f}")
+    plt.suptitle(f"Failure chart ({probability_law} model, shape factor {shape}, scale factor {scale}), \n connectivity {c_f}")
+    plt.tight_layout()
     plt.show()      
 
 
@@ -56,4 +66,4 @@ def get_session_length_in_epochs_lognormal(shape, scale):
 
 
 
-simulate_failure(1000,"weibull")
+simulate_failure(1000,"weibull",2)
