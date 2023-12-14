@@ -23,9 +23,10 @@ func TestExtractFailureModelNodeProfile(t *testing.T) {
 }
 
 func TestDrawNumberWeibull(t *testing.T) {
+	// not sure what to do here yet ...
 
 }
 
 func TestDrawNumberLognormal(t *testing.T) {
-
+	// not sure what to do here yet ...
 }
