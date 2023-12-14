@@ -2,7 +2,6 @@ package failuresimulation
 
 import (
 	configextractor "bartering/config-extractor"
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -44,6 +43,13 @@ func TestExtractConnectivityFactor(t *testing.T) {
 	cf3, _ := ExtractConnectivityFactor(config3)
 	cf4, _ := ExtractConnectivityFactor(config4)
 
-	fmt.Println(cf1, cf2, cf3, cf2, cf4)
+	if cf1 != 0.5 || cf2 != 0.3 || cf3 != 0.7 || cf4 != 0.0 {
+		t.Errorf("Connectivity not extracted well - should get 0.5 for peer, 0.3 for peeper and 0.7 for benefactor")
+	}
 
+}
+
+func TestFailure(t *testing.T) {
+	// config := configextractor.Config{NodeProfile: "benefactor", FailureModel: "weibull"}
+	// Failure(config, 1.0, 100)
 }

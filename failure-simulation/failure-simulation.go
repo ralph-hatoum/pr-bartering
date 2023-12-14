@@ -5,6 +5,9 @@ import (
 	"bartering/utils"
 	"errors"
 	"fmt"
+	"strconv"
+	"sync"
+	"time"
 
 	"gonum.org/v1/gonum/stat/distuv"
 )
@@ -53,7 +56,13 @@ func computeDowntimeFromSessionLength(connectivityFactor float64, sessionLength 
 
 }
 
-func Failure(config configextractor.Config, shape float64, scale float64) {
+func stopNode(mutex *sync.Mutex, downTime float64) {
+	mutex.Lock()
+	time.Sleep(time.Duration(downTime) * time.Minute)
+	mutex.Unlock()
+}
+
+func Failure(config configextractor.Config, shape float64, scale float64, mutex *sync.Mutex) {
 
 	sessionLengthDraw, err := ExtractFailureModelNodeProfile(config)
 
@@ -68,5 +77,10 @@ func Failure(config configextractor.Config, shape float64, scale float64) {
 	downTime := computeDowntimeFromSessionLength(connectivityFactor, sessionLength)
 
 	fmt.Println(downTime)
+	sessionLengthStr := strconv.FormatFloat(sessionLength, 'f', -1, 64)
+	// downTimeStr := strconv.FormatFloat(downTime, 'f', -1, 64)
+	fmt.Println("Staying up for ", sessionLengthStr)
+	time.Sleep(time.Duration(sessionLength) * time.Second)
+	stopNode(mutex, downTime)
 
 }
