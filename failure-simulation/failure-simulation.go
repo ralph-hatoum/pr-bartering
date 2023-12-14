@@ -4,6 +4,7 @@ import (
 	configextractor "bartering/config-extractor"
 	"bartering/utils"
 	"errors"
+	"fmt"
 
 	"gonum.org/v1/gonum/stat/distuv"
 )
@@ -65,5 +66,7 @@ func Failure(config configextractor.Config, shape float64, scale float64) {
 	sessionLength := sessionLengthDraw(shape, scale)
 
 	downTime := computeDowntimeFromSessionLength(connectivityFactor, sessionLength)
+
+	fmt.Println(downTime)
 
 }
