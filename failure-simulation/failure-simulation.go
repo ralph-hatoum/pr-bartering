@@ -57,22 +57,27 @@ func computeDowntimeFromSessionLength(connectivityFactor float64, sessionLength 
 }
 
 func stopNode(mutex *sync.Mutex, downTime float64) {
+	fmt.Println("Stopping node for ", downTime)
 	mutex.Lock()
-	time.Sleep(time.Duration(downTime) * time.Minute)
+	fmt.Println("Mutex locked, no communication now")
+	time.Sleep(time.Duration(downTime) * time.Second)
 	mutex.Unlock()
+	fmt.Println("Mutex unlocked")
 }
 
 func Failure(config configextractor.Config, shape float64, scale float64, mutex *sync.Mutex) {
 
-	sessionLengthDraw, err := ExtractFailureModelNodeProfile(config)
+	// sessionLengthDraw, err := ExtractFailureModelNodeProfile(config)
 
-	utils.ErrorHandler(err)
+	// utils.ErrorHandler(err)
 
 	connectivityFactor, err := ExtractConnectivityFactor(config)
 
 	utils.ErrorHandler(err)
 
-	sessionLength := sessionLengthDraw(shape, scale)
+	// sessionLength := sessionLengthDraw(shape, scale)
+
+	sessionLength := 20.0
 
 	downTime := computeDowntimeFromSessionLength(connectivityFactor, sessionLength)
 
