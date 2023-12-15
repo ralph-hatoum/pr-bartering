@@ -49,7 +49,7 @@ func main() {
 	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue)
+		peersconnect.ListenPeersRequestsTCPFailure(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &failureMutex)
 	}()
 
 	// to_request, err := storagerequests.ElectStorageNodes(scores, 3)

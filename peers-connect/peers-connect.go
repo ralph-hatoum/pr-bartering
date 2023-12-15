@@ -3,6 +3,7 @@ package peersconnect
 import (
 	"fmt"
 	"net"
+	"sync"
 
 	"bartering/bartering-api"
 	datastructures "bartering/data-structures"
@@ -10,6 +11,28 @@ import (
 	storagetesting "bartering/storage-testing"
 	"bartering/utils"
 )
+
+func ListenPeersRequestsTCPFailure(port string, nodeStorage float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, ratiosAtPeers []datastructures.NodeRatio, ratiosForPeers []datastructures.NodeRatio, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest, factorAcceptableRatio float64, deletienQueue *[]datastructures.StorageRequestTimedAccepted, failureMutex *sync.Mutex) {
+
+	/*
+		TCP server to receive messages from peers
+		To merge with ListenPeersRequestsTCP once tested and working
+	*/
+
+	listener, err := net.Listen("tcp", ":"+port)
+
+	fmt.Println(ratiosForPeers)
+
+	utils.ErrorHandler(err)
+
+	defer listener.Close()
+	for {
+		failureMutex.Lock()
+		conn, _ := listener.Accept()
+		go handleConnection(conn, nodeStorage, bytesAtPeers, scores, ratiosAtPeers, bytesForPeers, storedForPeers, factorAcceptableRatio, deletienQueue)
+		failureMutex.Unlock()
+	}
+}
 
 func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, ratiosAtPeers []datastructures.NodeRatio, ratiosForPeers []datastructures.NodeRatio, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest, factorAcceptableRatio float64, deletienQueue *[]datastructures.StorageRequestTimedAccepted) {
 
