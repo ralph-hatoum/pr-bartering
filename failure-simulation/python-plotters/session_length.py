@@ -64,6 +64,38 @@ def get_session_length_in_epochs_weibull(shape, scale):
 def get_session_length_in_epochs_lognormal(shape, scale):
     return int(np.random.lognormal(shape) * scale)
 
+def simulate_failure_over_N(nb_epochs: int, probability_law: str, number_of_runs: int):
+
+    if probability_law == "weibull":
+        get_session_length = get_session_length_in_epochs_weibull
+    elif probability_law == "lognormal":
+        get_session_length = get_session_length_in_epochs_lognormal
+
+    c_f = 0.7
+    t=0
+    scale = 100
+
+    total_up_time = 0
+    total_down_time = 0
+
+    while t<nb_epochs: 
+
+        session_length = get_session_length(shape, scale)
+        total_up_time += session_length
+
+        downtime = get_downtime_from_session_length(session_length, c_f)
+
+        total_down_time += downtime
+
+        print(total_up_time/(total_up_time+total_down_time))
+
+        t+=1
+
+    
 
 
-simulate_failure(3000,"lognormal",2)
+
+
+# simulate_failure(3000,"lognormal",2)
+
+simulate_failure_over_N(3000, "weibull",2)
