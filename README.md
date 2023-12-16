@@ -25,6 +25,9 @@ Daemon to run on the bootstrap node
 ### functions
 General funtions used in the node daemon
 
+### failure-simulation
+Functions to make nodes fail - used to test the protocol's behavior
+
 ### peers-connect
 Functions used to interact with other peers in the network
 
