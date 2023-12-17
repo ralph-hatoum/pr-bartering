@@ -12,7 +12,13 @@ import (
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
-func ExtractFailureModelNodeProfile(config configextractor.Config) (func(float64, float64) float64, error) {
+func ExtractFailureModel(config configextractor.Config) (func(float64, float64) float64, error) {
+
+	/*
+		Given config, extract the node's failure model
+		(failure model is the probability law for session length)
+	*/
+
 	if config.FailureModel == "weibull" {
 		return DrawNumberWeibull, nil
 	} else if config.FailureModel == "lognormal" {
@@ -23,6 +29,12 @@ func ExtractFailureModelNodeProfile(config configextractor.Config) (func(float64
 }
 
 func ExtractConnectivityFactor(config configextractor.Config) (float64, error) {
+
+	/*
+		Given config, extract node profile
+		(node profile defines proportion of time where node is up or down)
+	*/
+
 	if config.NodeProfile == "peer" {
 		return 0.5, nil
 	} else if config.NodeProfile == "benefactor" {
@@ -35,6 +47,11 @@ func ExtractConnectivityFactor(config configextractor.Config) (float64, error) {
 }
 
 func DrawNumberWeibull(shape float64, scale float64) float64 {
+
+	/*
+		Draw session length according to weibull law
+	*/
+
 	weibullDist := distuv.Weibull{
 		K:      shape,
 		Lambda: scale,
@@ -43,6 +60,11 @@ func DrawNumberWeibull(shape float64, scale float64) float64 {
 }
 
 func DrawNumberLognormal(Mu float64, Sigma float64) float64 {
+
+	/*
+		Draw session length according to lognormal law
+	*/
+
 	logNormalDist := distuv.LogNormal{
 		Mu:    Mu,
 		Sigma: Sigma,
@@ -52,11 +74,20 @@ func DrawNumberLognormal(Mu float64, Sigma float64) float64 {
 
 func computeDowntimeFromSessionLength(connectivityFactor float64, sessionLength float64) float64 {
 
+	/*
+		Given connectivity factor, we compute downtime to ensure over one cycle of up-down, connectivity factor is respected
+	*/
+
 	return ((1 - connectivityFactor) / connectivityFactor) * sessionLength
 
 }
 
 func stopNode(mutex *sync.Mutex, downTime float64) {
+
+	/*
+		Acquires a mutex that blocks peers listener and simulates downtime for a node
+	*/
+
 	fmt.Println("Stopping node for ", downTime)
 	mutex.Lock()
 	fmt.Println("Mutex locked, no communication now")
@@ -66,6 +97,10 @@ func stopNode(mutex *sync.Mutex, downTime float64) {
 }
 
 func Failure(config configextractor.Config, shape float64, scale float64, mutex *sync.Mutex) {
+
+	/*
+		Failure func, given config, probability law parameters and a mutex, simulates failure
+	*/
 
 	// sessionLengthDraw, err := ExtractFailureModelNodeProfile(config)
 
