@@ -101,26 +101,27 @@ func Failure(config configextractor.Config, shape float64, scale float64, mutex 
 	/*
 		Failure func, given config, probability law parameters and a mutex, simulates failure
 	*/
+	for {
+		// sessionLengthDraw, err := ExtractFailureModelNodeProfile(config)
 
-	// sessionLengthDraw, err := ExtractFailureModelNodeProfile(config)
+		// utils.ErrorHandler(err)
 
-	// utils.ErrorHandler(err)
+		connectivityFactor, err := ExtractConnectivityFactor(config)
 
-	connectivityFactor, err := ExtractConnectivityFactor(config)
+		utils.ErrorHandler(err)
 
-	utils.ErrorHandler(err)
+		// sessionLength := sessionLengthDraw(shape, scale)
 
-	// sessionLength := sessionLengthDraw(shape, scale)
+		sessionLength := 20.0
 
-	sessionLength := 20.0
+		downTime := computeDowntimeFromSessionLength(connectivityFactor, sessionLength)
 
-	downTime := computeDowntimeFromSessionLength(connectivityFactor, sessionLength)
-
-	fmt.Println(downTime)
-	sessionLengthStr := strconv.FormatFloat(sessionLength, 'f', -1, 64)
-	// downTimeStr := strconv.FormatFloat(downTime, 'f', -1, 64)
-	fmt.Println("Staying up for ", sessionLengthStr)
-	time.Sleep(time.Duration(sessionLength) * time.Second)
-	stopNode(mutex, downTime)
+		fmt.Println(downTime)
+		sessionLengthStr := strconv.FormatFloat(sessionLength, 'f', -1, 64)
+		// downTimeStr := strconv.FormatFloat(downTime, 'f', -1, 64)
+		fmt.Println("Staying up for ", sessionLengthStr)
+		time.Sleep(time.Duration(sessionLength) * time.Second)
+		stopNode(mutex, downTime)
+	}
 
 }
