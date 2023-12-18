@@ -2,6 +2,7 @@ package failuresimulation
 
 import (
 	configextractor "bartering/config-extractor"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -24,6 +25,8 @@ func TestExtractFailureModel(t *testing.T) {
 
 func TestDrawNumberWeibull(t *testing.T) {
 	// not sure what to do here yet ...
+	sessionLength := DrawNumberWeibull(1.5, 100)
+	fmt.Println(sessionLength)
 
 }
 
