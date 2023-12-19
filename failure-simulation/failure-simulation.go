@@ -102,9 +102,9 @@ func Failure(config configextractor.Config, shape float64, scale float64, mutex 
 		Failure func, given config, probability law parameters and a mutex, simulates failure
 	*/
 
-	sessionLengthDraw, err := ExtractFailureModel(config)
+	// sessionLengthDraw, err := ExtractFailureModel(config)
 
-	utils.ErrorHandler(err)
+	// utils.ErrorHandler(err)
 
 	connectivityFactor, err := ExtractConnectivityFactor(config)
 
@@ -112,7 +112,8 @@ func Failure(config configextractor.Config, shape float64, scale float64, mutex 
 
 	for {
 
-		sessionLength := sessionLengthDraw(shape, scale)
+		// sessionLength := sessionLengthDraw(shape, scale)
+		sessionLength := 10.0
 
 		downTime := computeDowntimeFromSessionLength(connectivityFactor, sessionLength)
 
