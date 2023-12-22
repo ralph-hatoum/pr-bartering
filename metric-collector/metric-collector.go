@@ -1,14 +1,17 @@
 package metriccollector
 
-func InitiateCounters() (int, int) {
-	// Function to iniate counters to grab metrics
-	// We need to keep track of : number of messages sent and number of tests performed
-
-	return 0, 0
-}
+// Not sure about all of this - should probabluy think it through before starting to code ...
 
 func IncreaseCounter(counter *int) {
 	*counter += 1
+}
+
+func IncreaseByteCounter(counter *int, bytes int) {
+	*counter += bytes
+}
+
+func DecreaseByteCounter(counter *int, bytes int) {
+	*counter -= bytes
 }
 
 func ComputeTotalEnergyConsumption(testCounter int, msgCounter int, singleTestEnergy float64, singleMsgEnergy float64) (float64, float64, float64) {

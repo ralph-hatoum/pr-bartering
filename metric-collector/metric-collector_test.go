@@ -6,7 +6,7 @@ import (
 
 func TestExtractFailureModel(t *testing.T) {
 
-	msgCounter, testCounter := InitiateCounters()
+	msgCounter, testCounter := 0, 0
 
 	IncreaseCounter(&msgCounter)
 	IncreaseCounter(&testCounter)
