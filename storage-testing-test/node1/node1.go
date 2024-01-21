@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -20,13 +21,17 @@ func main() {
 
 	msgCounter, _ := 0, 0
 
+	args := os.Args
+
+	bootstrapIp := args[1]
+
 	fmt.Println("Extracting configuration")
 	config := configextractor.ConfigExtractor("config.yaml")
 
 	configextractor.ConfigPrinter(config)
 
 	// storage_pool, pending_requests, fulfilled_storage, peers := functions.NodeStartup()
-	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers := functions.NodeStartup()
+	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers := functions.NodeStartup(bootstrapIp)
 
 	// path := "test-data/test.txt"
 	fmt.Println("Bytes at peers :", bytesAtPeers)

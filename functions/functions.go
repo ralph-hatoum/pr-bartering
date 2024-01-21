@@ -12,7 +12,7 @@ import (
 	"bartering/utils"
 )
 
-func NodeStartup() ([]string, []datastructures.StorageRequest, []datastructures.FulfilledRequest, []string, []datastructures.PeerStorageUse, []datastructures.PeerStorageUse, []datastructures.NodeScore, []datastructures.NodeRatio, []datastructures.NodeRatio, []datastructures.FulfilledRequest) {
+func NodeStartup(bootstrapIp string) ([]string, []datastructures.StorageRequest, []datastructures.FulfilledRequest, []string, []datastructures.PeerStorageUse, []datastructures.PeerStorageUse, []datastructures.NodeScore, []datastructures.NodeRatio, []datastructures.NodeRatio, []datastructures.FulfilledRequest) {
 
 	/*
 		Function called upon a node's startup
@@ -39,7 +39,7 @@ func NodeStartup() ([]string, []datastructures.StorageRequest, []datastructures.
 	fulfilled_requests := []datastructures.FulfilledRequest{}
 
 	fmt.Println("Creating peers list")
-	peers := bootstrapconnect.GetPeersFromBootstrapHTTP("127.0.0.1", "8082")
+	peers := bootstrapconnect.GetPeersFromBootstrapHTTP(bootstrapIp, "8082")
 
 	fmt.Println("Creating bytes at peers list, scores and ratios")
 	bytesAtPeers := initiatePeerStorageUseArray(peers, 0.0)

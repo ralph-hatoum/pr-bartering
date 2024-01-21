@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"regexp"
 	"sync"
 
 	configextractor "bartering/config-extractor"
@@ -18,13 +20,27 @@ func main() {
 
 	msgCounter, _ := 0, 0
 
+	args := os.Args
+
+	ipRegex := regexp.MustCompile(`^(\d{1,3}\.){3}\d{1,3}$`)
+
+	if len(args) != 2 {
+		fmt.Println("Not enough arguments ; use : ./bartering <bootstrap-IP>")
+		panic(-1)
+	} else if !ipRegex.MatchString(args[1]) {
+		fmt.Println("Argument invalid : must be an IP adress")
+		panic(-1)
+	}
+
+	bootstrapIp := args[1]
+
 	fmt.Println("Extracting configuration")
 	config := configextractor.ConfigExtractor("config.yaml")
 
 	configextractor.ConfigPrinter(config)
 
 	// storage_pool, pending_requests, fulfilled_storage, peers := functions.NodeStartup()
-	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers := functions.NodeStartup()
+	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers := functions.NodeStartup(bootstrapIp)
 
 	// path := "test-data/test.txt"
 	fmt.Println("Bytes at peers :", bytesAtPeers)
