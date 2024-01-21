@@ -18,6 +18,8 @@ var port = "8083"
 
 func main() {
 
+	msgCounter, _ := 0, 0
+
 	fmt.Println("Extracting configuration")
 	config := configextractor.ConfigExtractor("config.yaml")
 
@@ -48,7 +50,7 @@ func main() {
 	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue)
+		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter)
 	}()
 
 	to_request, err := storagerequests.ElectStorageNodes(scores, 1)

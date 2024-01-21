@@ -62,7 +62,7 @@ func HandleTest(CID string, conn net.Conn) {
 	answer := computeExpectedAnswer(CID)
 	fmt.Println("Proof computed : ", answer)
 	buffer := []byte(answer)
-	conn.Write(buffer)
+	conn.Write(buffer) // INCREASE NBMSG COUNTER
 
 }
 
@@ -80,7 +80,7 @@ func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeSco
 
 	message := "TesRq" + CID
 
-	_, err = io.WriteString(conn, message)
+	_, err = io.WriteString(conn, message) // INCREASE NBMSG COUNTER
 
 	utils.ErrorHandler(err)
 

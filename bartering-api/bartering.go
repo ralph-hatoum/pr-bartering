@@ -13,7 +13,7 @@ import (
 	"bartering/utils"
 )
 
-func InitiateBarter(peer string, ratios []datastructures.NodeRatio, ratioIncreaseRate float64, port string) error {
+func InitiateBarter(peer string, ratios []datastructures.NodeRatio, ratioIncreaseRate float64, port string, msgCounter *int) error {
 
 	/*
 		Function to barter the storage ratio
@@ -30,7 +30,7 @@ func InitiateBarter(peer string, ratios []datastructures.NodeRatio, ratioIncreas
 
 	barterMessage := "BarRq" + strconv.FormatFloat(newRatio, 'f', -1, 64)
 
-	response := contactNodeForBarter(peer, barterMessage, port)
+	response := contactNodeForBarter(peer, barterMessage, port, msgCounter)
 
 	if response == "OK\n" {
 		// update that ratio value
@@ -45,7 +45,7 @@ func InitiateBarter(peer string, ratios []datastructures.NodeRatio, ratioIncreas
 	return nil
 }
 
-func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, conn net.Conn, ratios []datastructures.NodeRatio, factorAcceptableRatio float64) {
+func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, conn net.Conn, ratios []datastructures.NodeRatio, factorAcceptableRatio float64, msgCounter *int) {
 
 	/*
 		Function to answer a barter request
@@ -61,6 +61,7 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 	if shouldRatioBeAccepted(barterMsg_ratio, peer, storageSpace, bytesAtPeers, scores, factorAcceptableRatio) {
 		fmt.Println("New ratio is accepted -- sending OK to other peer")
 		_, err := io.WriteString(conn, "OK\n")
+		*msgCounter += 1 // INCREASE NBMSG COUNTER
 		if err != nil {
 			fmt.Println(err)
 		} else {
@@ -76,6 +77,7 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 		fmt.Println("New ratio :", newRatio)
 		toSend := fmt.Sprintf("%f\n", newRatio)
 		_, err = io.WriteString(conn, toSend)
+		*msgCounter += 1 // INCREASE NBMSG COUNTER
 		utils.ErrorHandler(err)
 		updatePeerRatio(ratios, peer, 1/newRatio)
 	}
@@ -237,7 +239,7 @@ func findPeerScore(peer string, scores []datastructures.NodeScore) (datastructur
 	return datastructures.NodeScore{}, errors.New("peer not in peers list")
 }
 
-func contactNodeForBarter(peer string, msg string, port string) string {
+func contactNodeForBarter(peer string, msg string, port string, msgCounter *int) string {
 
 	/*
 		Function to setup tcp connection to contact node to barter ratio
@@ -251,6 +253,7 @@ func contactNodeForBarter(peer string, msg string, port string) string {
 	defer conn.Close()
 
 	_, err = io.WriteString(conn, msg)
+	*msgCounter += 1 // INCREASE NBMSG COUNTER
 
 	utils.ErrorHandler(err)
 	response := bufio.NewReader(conn)

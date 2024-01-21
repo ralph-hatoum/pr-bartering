@@ -16,6 +16,8 @@ var NodeStorage = 400000000.0
 
 func main() {
 
+	msgCounter, _ := 0, 0
+
 	fmt.Println("Extracting configuration")
 	config := configextractor.ConfigExtractor("config.yaml")
 
@@ -44,7 +46,7 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(PORT, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue)
+		peersconnect.ListenPeersRequestsTCP(PORT, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter)
 	}()
 
 	wg.Wait()
