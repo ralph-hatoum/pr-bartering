@@ -247,8 +247,6 @@ func ElectStorageNodes(peerScores []datastructures.NodeScore, numberOfNodes int)
 		Returns : list of strings containing IPs of nodes to contact
 	*/
 
-	// TODO change so we also elect low score nodes to give the opportunity to raise the score
-
 	if numberOfNodes > len(peerScores) {
 		return []string{}, errors.New("asking for more peers than we know")
 	}
@@ -282,6 +280,14 @@ func ElectStorageNodes(peerScores []datastructures.NodeScore, numberOfNodes int)
 }
 
 func ElectStorageNodesLowAndHigh(peerScores []datastructures.NodeScore, numberOfNodes int) []datastructures.NodeScore {
+
+	/*
+		Function to elect nodes to whom self will send storage requests - low and high scores
+		nodeScore list NEEDS to be SORTED for this function to behave correctly
+		Arguments : nodeScore list, number of nodes as int
+		Returns : list of strings containing IPs of nodes to contact
+	*/
+
 	lowScoreProportion := 0.2
 	nbNodesChosen := 0
 	chosen := []datastructures.NodeScore{}
