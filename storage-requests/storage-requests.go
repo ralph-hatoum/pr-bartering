@@ -243,7 +243,7 @@ func ElectStorageNodes(peerScores []datastructures.NodeScore, numberOfNodes int)
 
 	/*
 		Function to elect nodes to whom self will send storage requests
-		Arguments : IP of peer as string, number of nodes as int
+		Arguments : nodeScore list, number of nodes as int
 		Returns : list of strings containing IPs of nodes to contact
 	*/
 
@@ -279,6 +279,26 @@ func ElectStorageNodes(peerScores []datastructures.NodeScore, numberOfNodes int)
 	}
 
 	return electedNodes, nil
+}
+
+func ElectStorageNodesLowAndHigh(peerScores []datastructures.NodeScore, numberOfNodes int) []datastructures.NodeScore {
+	lowScoreProportion := 0.2
+	nbNodesChosen := 0
+	chosen := []datastructures.NodeScore{}
+	for float64(nbNodesChosen) < lowScoreProportion*float64(numberOfNodes) {
+		chosen = append(chosen, peerScores[nbNodesChosen])
+		nbNodesChosen += 1
+		peerScores = peerScores[1:]
+	}
+	index := 0
+	for nbNodesChosen < numberOfNodes {
+		chosen = append(chosen, peerScores[len(peerScores)-index])
+		index += 1
+		nbNodesChosen += 1
+		peerScores = peerScores[:len(peerScores)-1]
+	}
+	return chosen
+
 }
 
 func CheckRqValidity(storageRequest datastructures.StorageRequest) bool {
