@@ -75,6 +75,25 @@ func TestGarbageCollectionStrategy(t *testing.T) {
 
 }
 
+func TestElectStorageNodesLowAndHigh(t *testing.T) {
+	scores := []datastructures.NodeScore{}
+	i := 0
+	score := 3.0
+	for i < 30 {
+		scores = append(scores, datastructures.NodeScore{NodeIP: "127.0.0.1", Score: score})
+		score += 0.5
+		i++
+	}
+
+	elected10 := ElectStorageNodesLowAndHigh(scores, 10)
+
+	fmt.Println(elected10)
+
+	elected20 := ElectStorageNodesLowAndHigh(scores, 20)
+
+	fmt.Println(elected20)
+}
+
 // func TestComputeDeadlineFromTimedStorageRequest(t *testing.T) {
 // 	storageRequest := datastructures.StorageRequestTimed{CID: "whatever", DurationMinutes: 3}
 // 	currentTime := time.Now()

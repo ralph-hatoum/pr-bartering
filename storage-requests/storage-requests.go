@@ -290,11 +290,11 @@ func ElectStorageNodesLowAndHigh(peerScores []datastructures.NodeScore, numberOf
 		nbNodesChosen += 1
 		peerScores = peerScores[1:]
 	}
-	index := 0
+	// index := 1
 	for nbNodesChosen < numberOfNodes {
-		chosen = append(chosen, peerScores[len(peerScores)-index])
-		index += 1
+		chosen = append(chosen, peerScores[len(peerScores)-1])
 		nbNodesChosen += 1
+		// fmt.Println(len(peerScores))
 		peerScores = peerScores[:len(peerScores)-1]
 	}
 	return chosen
