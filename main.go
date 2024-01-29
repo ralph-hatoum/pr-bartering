@@ -56,6 +56,10 @@ func main() {
 	fmt.Println("")
 	fmt.Println("Node started ! Listening on port ", port)
 
+	// DOIT TOURNER EN ARRIERE PLAN : LISTENPEERSCONNECT (AWAIT AND ANSWER PEER MESSAGES), FS WATCHER (WATCH FOR NEW FILES),
+	//  STORAGE TESTER (TEST FOR STORAGE OF OWN FILES, ASK FOR STORAGE AFTER LEASE EXPIRES,
+	// MAINTAIN K COPIES OF DATA), BARTERER (SHOULD WE ASK FOR MORE SPACE?)
+
 	// functions.Store(path, storage_pool, pending_requests)
 
 	var wg sync.WaitGroup // Import "sync" package to use WaitGroup.
