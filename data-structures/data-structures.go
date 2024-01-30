@@ -18,8 +18,9 @@ type NodeRatio struct {
 }
 
 type FulfilledRequest struct {
-	CID  string
-	Peer string
+	CID      string
+	Peer     string
+	FileSize float64
 }
 
 type StorageRequest struct {

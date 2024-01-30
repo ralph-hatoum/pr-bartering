@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, numberOfNodes int, K int, storageRequest datastructures.StorageRequest, port string, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, fulfilledRequests *[]datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64) int {
+func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, K int, storageRequest datastructures.StorageRequest, port string, bytesAtPeers []datastructures.PeerStorageUse, fulfilledRequests *[]datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64) int {
 
 	okRqs := 0
 	ans := ""
@@ -28,10 +28,10 @@ func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, numberOfNodes 
 		}
 
 		for _, peer := range peersToRequest {
-			ans = RequestStorageFromPeer(peer, storageRequest, port, bytesAtPeers, scores, fulfilledRequests, scoreDecreaseRefStoReq)
+			ans = RequestStorageFromPeer(peer, storageRequest, port, bytesAtPeers, peerScores, fulfilledRequests, scoreDecreaseRefStoReq)
 			if ans == "OK\n" {
 				okRqs += 1
-				peerScores = removePeerFromPeers(peerScores, peer)
+				peerScores = RemovePeerFromPeers(peerScores, peer)
 			}
 			if okRqs == K {
 				fmt.Println("Reached required number of copies")
@@ -48,7 +48,7 @@ func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, numberOfNodes 
 
 }
 
-func removePeerFromPeers(peerScores []datastructures.NodeScore, peerToRm string) []datastructures.NodeScore {
+func RemovePeerFromPeers(peerScores []datastructures.NodeScore, peerToRm string) []datastructures.NodeScore {
 	for index, peer := range peerScores {
 		if peer.NodeIP == peerToRm {
 			peerScores = append(peerScores[:index], peerScores[index+1:]...)
