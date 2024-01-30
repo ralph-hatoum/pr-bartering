@@ -73,7 +73,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		storagetesting.PeriodicTests(fulfilled_requests, scores, config.StoragetestingTimerTimeoutSec, port, config.StoragetestingTestingPeriod, DecreaseBehavior, IncreaseBehavior)
+		storagetesting.PeriodicTests(fulfilled_requests, scores, config.StoragetestingTimerTimeoutSec, port, config.StoragetestingTestingPeriod, DecreaseBehavior, IncreaseBehavior, bytesAtPeers, config.StoragerequestsScoreDecreaseRefusedStoReq)
 	}()
 	wg.Wait()
 
