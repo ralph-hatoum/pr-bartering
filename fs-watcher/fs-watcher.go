@@ -1,16 +1,25 @@
 package fswatcher
 
 import (
+	api_ipfs "bartering/api-ipfs"
 	datastructures "bartering/data-structures"
+
 	// "bartering/functions"
 	storagerequests "bartering/storage-requests"
 	"fmt"
 	"log"
 
 	fsnotify "github.com/fsnotify/fsnotify"
+
+	"os"
 )
 
-func FsWatcher(path string, storage_pool []string, peerScores []datastructures.NodeScore, K int, storageRequest datastructures.StorageRequest, port string, bytesAtPeers []datastructures.PeerStorageUse, fulfilledRequests []datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64) {
+func getFileSize(path string) int64 {
+	fileInfo, _ := os.Stat(path)
+	return fileInfo.Size()
+}
+
+func FsWatcher(path string, peerScores []datastructures.NodeScore, K int, port string, bytesAtPeers []datastructures.PeerStorageUse, fulfilledRequests []datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
@@ -31,6 +40,8 @@ func FsWatcher(path string, storage_pool []string, peerScores []datastructures.N
 					// Handle the file creation event
 					fmt.Println("New file ", filePath, " detected, storing on network")
 					// go functions.Store(filePath, storage_pool, pendingRequests) // this still does not actually trigger storage on the network
+					CID := api_ipfs.UploadToIPFS(filePath)
+					storageRequest := datastructures.StorageRequest{CID: CID, FileSize: float64(getFileSize(filePath))}
 					go storagerequests.StoreKCopiesOnNetwork(peerScores, K, storageRequest, port, bytesAtPeers, &fulfilledRequests, scoreDecreaseRefStoReq)
 				}
 				if event.Op&fsnotify.Write == fsnotify.Write {

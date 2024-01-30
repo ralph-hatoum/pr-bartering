@@ -26,6 +26,7 @@ type Config struct {
 	StoragetestingPassedTestIncrease          float64 `yaml:"StoragetestingPassedTestIncrease"`
 	FailureModel                              string  `yaml:"FailureModel"`
 	NodeProfile                               string  `yaml:"NodeProfile"`
+	DataCopies                                int     `yaml:"DataCopies"`
 }
 
 func ConfigExtractor(path string) Config {
@@ -56,6 +57,7 @@ func ConfigPrinter(conf Config) {
 	toPrint := fmt.Sprintf(`
 	Read config -- launching node with the following parameters :
 	Port : %d
+	Number of data copies : %d
 	Node total storage : %d
 	Initial scores attributed to peers : %f
 	Maximum acceptable ratio factor : %f
@@ -69,6 +71,7 @@ func ConfigPrinter(conf Config) {
 	Failure mode : %s
 	Node profile : %s
 	`, conf.Port,
+		conf.DataCopies,
 		conf.TotalStorage,
 		conf.BarteringInitialScore,
 		conf.BarteringFactorAcceptableRatio,
