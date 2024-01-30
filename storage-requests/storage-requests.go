@@ -31,6 +31,7 @@ func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, numberOfNodes 
 			ans = RequestStorageFromPeer(peer, storageRequest, port, bytesAtPeers, scores, fulfilledRequests, scoreDecreaseRefStoReq)
 			if ans == "OK\n" {
 				okRqs += 1
+				peerScores = removePeerFromPeers(peerScores, peer)
 			}
 			if okRqs == K {
 				fmt.Println("Reached required number of copies")
@@ -45,6 +46,15 @@ func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, numberOfNodes 
 
 	return okRqs
 
+}
+
+func removePeerFromPeers(peerScores []datastructures.NodeScore, peerToRm string) []datastructures.NodeScore {
+	for index, peer := range peerScores {
+		if peer.NodeIP == peerToRm {
+			peerScores = append(peerScores[:index], peerScores[index+1:]...)
+		}
+	}
+	return peerScores
 }
 
 func BuildStorageRequestMessage(storageRequest datastructures.StorageRequest) string {
