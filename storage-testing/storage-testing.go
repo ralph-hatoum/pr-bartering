@@ -22,7 +22,11 @@ func PeriodicTests(fulfilledRequests []datastructures.FulfilledRequest, scores [
 	for {
 		time.Sleep(time.Duration(testingPeriod * 1000000000))
 		for _, fulfilledRequest := range fulfilledRequests {
-			ContactPeerForTest(fulfilledRequest.CID, fulfilledRequest.Peer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior)
+			testResult := ContactPeerForTest(fulfilledRequest.CID, fulfilledRequest.Peer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior)
+			if !testResult {
+				// Could not confirm storage ; need to request storage from other node
+				fmt.Println("requesting storage from other node ... ")
+			}
 		}
 	}
 }
@@ -62,7 +66,7 @@ func HandleTest(CID string, conn net.Conn) {
 
 }
 
-func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario) {
+func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario) bool {
 
 	/*
 		Function to contact a peer to ask for a test, check answer and update score accordingly
@@ -91,16 +95,18 @@ func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeSco
 		fmt.Println("Timeout: No response received.")
 		// Here, score should be decreased as no response was received
 		decreaseScore(peer, "failedTestTimeout", scores, DecreasingBehavior)
+		return false
 	case response := <-responseChannel:
 		fmt.Println("Response received")
 		// Here, response was received, it should be checked if the response is correct or wrong to decide how score should evolve
 		if checkAnswer(response, CID) {
 			fmt.Println("test passed")
 			increaseScore(peer, "passedTest", scores, IncreasingBehavior)
-			fmt.Println(scores)
+			return true
 		} else {
 			fmt.Println("test not passed")
 			decreaseScore(peer, "failedTestWrongAns", scores, DecreasingBehavior)
+			return false
 			// HERE, SHOULD REQUEST STORAGE FROM DIFFERENT NODE TO ENSURE WE HAVE REDUNDANCY
 		}
 	}
