@@ -7,6 +7,7 @@ import (
 
 	configextractor "bartering/config-extractor"
 	datastructures "bartering/data-structures"
+	fswatcher "bartering/fs-watcher"
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
 	storagerequests "bartering/storage-requests"
@@ -70,6 +71,15 @@ func main() {
 		defer wg.Done()
 		storagetesting.PeriodicTests(fulfilled_requests, scores, config.StoragetestingTimerTimeoutSec, port, config.StoragetestingTestingPeriod, DecreaseBehavior, IncreaseBehavior, bytesAtPeers, config.StoragerequestsScoreDecreaseRefusedStoReq)
 	}()
+
+	wg.Add(1)
+	go func() {
+		// FSWATCHER - to upload data on network
+		defer wg.Done()
+		fswatcher.FsWatcher("./data", scores, config.DataCopies, port, bytesAtPeers, fulfilled_requests, config.StoragerequestsScoreDecreaseRefusedStoReq)
+	}()
+
+	// TODO : BARTERER, FAILURESIM, DATASIM
 	wg.Wait()
 
 	to_request, err := storagerequests.ElectStorageNodes(scores, 1)

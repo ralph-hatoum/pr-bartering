@@ -8,7 +8,6 @@ import (
 	configextractor "bartering/config-extractor"
 	datastructures "bartering/data-structures"
 	failuresimulation "bartering/failure-simulation"
-	fswatcher "bartering/fs-watcher"
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
 )
@@ -63,7 +62,7 @@ func main() {
 	// utils.ErrorHandler(err)
 	// fmt.Println(to_request)
 
-	fswatcher.FsWatcher("./test-data", storage_pool, pending_requests)
+	// fswatcher.FsWatcher("./test-data", storage_pool, pending_requests)
 	fmt.Println(pending_requests)
 	// Wait for the goroutine to finish.
 	wg.Wait()
