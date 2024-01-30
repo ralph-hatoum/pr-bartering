@@ -2,14 +2,15 @@ package fswatcher
 
 import (
 	datastructures "bartering/data-structures"
-	"bartering/functions"
+	// "bartering/functions"
+	storagerequests "bartering/storage-requests"
 	"fmt"
 	"log"
 
 	fsnotify "github.com/fsnotify/fsnotify"
 )
 
-func FsWatcher(path string, storage_pool []string, pendingRequests []datastructures.StorageRequest) {
+func FsWatcher(path string, storage_pool []string, peerScores []datastructures.NodeScore, K int, storageRequest datastructures.StorageRequest, port string, bytesAtPeers []datastructures.PeerStorageUse, fulfilledRequests []datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
@@ -29,7 +30,8 @@ func FsWatcher(path string, storage_pool []string, pendingRequests []datastructu
 					filePath := event.Name
 					// Handle the file creation event
 					fmt.Println("New file ", filePath, " detected, storing on network")
-					go functions.Store(filePath, storage_pool, pendingRequests) // this still does not actually trigger storage on the network
+					// go functions.Store(filePath, storage_pool, pendingRequests) // this still does not actually trigger storage on the network
+					go storagerequests.StoreKCopiesOnNetwork(peerScores, K, storageRequest, port, bytesAtPeers, &fulfilledRequests, scoreDecreaseRefStoReq)
 				}
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					filePath := event.Name

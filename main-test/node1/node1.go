@@ -23,6 +23,11 @@ func main() {
 
 	args := os.Args
 
+	if len(args) != 2 {
+		fmt.Println("Not enough arguments ; use : ./bartering <bootstrap-IP>")
+		panic(-1)
+	}
+
 	bootstrapIp := args[1]
 
 	fmt.Println("Extracting configuration")
@@ -54,9 +59,18 @@ func main() {
 	wg.Add(1)
 	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 	go func() {
+		// PEER LISTENER - to receive messages from other peers
 		defer wg.Done()
 		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter)
 	}()
+
+	wg.Add(1)
+	go func() {
+		// STORAGE TESTING - to test storage at peers
+		defer wg.Done()
+		storagetesting.PeriodicTests(fulfilled_requests, scores, config.StoragetestingTimerTimeoutSec, port, config.StoragetestingTestingPeriod, DecreaseBehavior, IncreaseBehavior, bytesAtPeers, config.StoragerequestsScoreDecreaseRefusedStoReq)
+	}()
+	wg.Wait()
 
 	to_request, err := storagerequests.ElectStorageNodes(scores, 1)
 	utils.ErrorHandler(err)
@@ -69,12 +83,5 @@ func main() {
 	fmt.Println(bytesAtPeers)
 	fmt.Println(fulfilled_requests)
 	// Wait for the goroutine to finish.
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		storagetesting.PeriodicTests(fulfilled_requests, scores, config.StoragetestingTimerTimeoutSec, port, config.StoragetestingTestingPeriod, DecreaseBehavior, IncreaseBehavior, bytesAtPeers, config.StoragerequestsScoreDecreaseRefusedStoReq)
-	}()
-	wg.Wait()
 
 }
