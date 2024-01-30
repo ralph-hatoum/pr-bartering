@@ -14,6 +14,39 @@ import (
 	"time"
 )
 
+func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, numberOfNodes int, K int, storageRequest datastructures.StorageRequest, port string, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, fulfilledRequests *[]datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64) int {
+
+	okRqs := 0
+	ans := ""
+	tries := 0
+
+	for tries < 3 {
+		peersToRequest, err := ElectStorageNodes(peerScores, K+5)
+		if err != nil {
+			fmt.Println(err)
+			return 0
+		}
+
+		for _, peer := range peersToRequest {
+			ans = RequestStorageFromPeer(peer, storageRequest, port, bytesAtPeers, scores, fulfilledRequests, scoreDecreaseRefStoReq)
+			if ans == "OK\n" {
+				okRqs += 1
+			}
+			if okRqs == K {
+				fmt.Println("Reached required number of copies")
+				return okRqs
+			}
+		}
+		fmt.Println("Could not reach number of copies ... choosing new nodes")
+		tries += 1
+	}
+
+	fmt.Println("Could not reach desired number of copies -  only got ", okRqs)
+
+	return okRqs
+
+}
+
 func BuildStorageRequestMessage(storageRequest datastructures.StorageRequest) string {
 
 	/*
@@ -64,7 +97,7 @@ func updateFulfilledRequests(CID string, peer string, fulfilledRequests *[]datas
 
 }
 
-func RequestStorageFromPeer(peer string, storageRequest datastructures.StorageRequest, port string, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, fulfilledRequests *[]datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64) {
+func RequestStorageFromPeer(peer string, storageRequest datastructures.StorageRequest, port string, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, fulfilledRequests *[]datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64) string {
 
 	/*
 		Function to request storage from a peer
@@ -96,6 +129,8 @@ func RequestStorageFromPeer(peer string, storageRequest datastructures.StorageRe
 		fmt.Println("Storage refused by node, decreasing score")
 		updatePeerScoreRefusedRq(scores, peer, scoreDecreaseRefStoReq)
 	}
+	// TODO TIMEOUT ?
+	return responseString
 }
 
 func updatePeerScoreRefusedRq(scores []datastructures.NodeScore, peer string, scoreDecreaseRefStoReq float64) {

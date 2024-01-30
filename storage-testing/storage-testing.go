@@ -12,10 +12,6 @@ import (
 	"time"
 )
 
-// var DecreasingBehavior = []datastructures.ScoreVariationScenario{{Scenario: "failedTestTimeout", Variation: 0.5}, {Scenario: "failedTestWrongAns", Variation: 0.7}}
-
-// var IncreasingBehavior = []datastructures.ScoreVariationScenario{{Scenario: "passedTest", Variation: 0.2}}
-
 func PeriodicTests(fulfilledRequests []datastructures.FulfilledRequest, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, testingPeriod float64, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario) {
 
 	/*
@@ -105,6 +101,7 @@ func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeSco
 		} else {
 			fmt.Println("test not passed")
 			decreaseScore(peer, "failedTestWrongAns", scores, DecreasingBehavior)
+			// HERE, SHOULD REQUEST STORAGE FROM DIFFERENT NODE TO ENSURE WE HAVE REDUNDANCY
 		}
 	}
 }
