@@ -10,9 +10,7 @@ import (
 	fswatcher "bartering/fs-watcher"
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
-	storagerequests "bartering/storage-requests"
 	storagetesting "bartering/storage-testing"
-	"bartering/utils"
 )
 
 var NodeStorage float64
@@ -69,29 +67,29 @@ func main() {
 	go func() {
 		// STORAGE TESTING - to test storage at peers
 		defer wg.Done()
-		storagetesting.PeriodicTests(fulfilled_requests, scores, config.StoragetestingTimerTimeoutSec, port, config.StoragetestingTestingPeriod, DecreaseBehavior, IncreaseBehavior, bytesAtPeers, config.StoragerequestsScoreDecreaseRefusedStoReq)
+		storagetesting.PeriodicTests(&fulfilled_requests, scores, config.StoragetestingTimerTimeoutSec, port, config.StoragetestingTestingPeriod, DecreaseBehavior, IncreaseBehavior, bytesAtPeers, config.StoragerequestsScoreDecreaseRefusedStoReq)
 	}()
 
 	wg.Add(1)
 	go func() {
 		// FSWATCHER - to upload data on network
 		defer wg.Done()
-		fswatcher.FsWatcher("./data", scores, config.DataCopies, port, bytesAtPeers, fulfilled_requests, config.StoragerequestsScoreDecreaseRefusedStoReq)
+		fswatcher.FsWatcher("./data", scores, config.DataCopies, port, bytesAtPeers, &fulfilled_requests, config.StoragerequestsScoreDecreaseRefusedStoReq)
 	}()
 
 	// TODO : BARTERER, FAILURESIM, DATASIM
 	wg.Wait()
 
-	to_request, err := storagerequests.ElectStorageNodes(scores, 1)
-	utils.ErrorHandler(err)
+	// to_request, err := storagerequests.ElectStorageNodes(scores, 1)
+	// utils.ErrorHandler(err)
 
-	single_node := to_request[0]
+	// single_node := to_request[0]
 
-	stoRq := datastructures.StorageRequest{CID: "QmV9tSDx9UiPeWExXEeH6aoDvmihvx6jD5eLb4jbTaKGps", FileSize: 5.0}
+	// stoRq := datastructures.StorageRequest{CID: "QmV9tSDx9UiPeWExXEeH6aoDvmihvx6jD5eLb4jbTaKGps", FileSize: 5.0}
 
-	storagerequests.RequestStorageFromPeer(single_node, stoRq, "8081", bytesAtPeers, scores, &fulfilled_requests, config.StoragerequestsScoreDecreaseRefusedStoReq)
-	fmt.Println(bytesAtPeers)
-	fmt.Println(fulfilled_requests)
+	// storagerequests.RequestStorageFromPeer(single_node, stoRq, "8081", bytesAtPeers, scores, &fulfilled_requests, config.StoragerequestsScoreDecreaseRefusedStoReq)
+	// fmt.Println(bytesAtPeers)
+	// fmt.Println(fulfilled_requests)
 	// Wait for the goroutine to finish.
 
 }
