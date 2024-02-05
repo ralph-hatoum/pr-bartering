@@ -13,23 +13,31 @@ import (
 	"time"
 )
 
-func PeriodicTests(fulfilledRequests []datastructures.FulfilledRequest, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, testingPeriod float64, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario, bytesAtPeers []datastructures.PeerStorageUse, scoreDecreaseRefStoReq float64) {
+func PeriodicTests(fulfilledRequests *[]datastructures.FulfilledRequest, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, testingPeriod float64, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario, bytesAtPeers []datastructures.PeerStorageUse, scoreDecreaseRefStoReq float64) {
 
 	/*
 		Function to requests tests periodically from peers storing our data
 		Arguments : FulfilledRequest array, NodeScore array
 	*/
 
+	fmt.Println("Periodic Tester started!")
+
 	for {
-		time.Sleep(time.Duration(testingPeriod * 1000000000))
-		for _, fulfilledRequest := range fulfilledRequests {
+		fmt.Println("before sleep")
+		time.Sleep(time.Duration(testingPeriod) * time.Second)
+		fmt.Println("after sleep")
+		fmt.Println(fulfilledRequests)
+		for _, fulfilledRequest := range *fulfilledRequests {
+			if len(*fulfilledRequests) == 0 {
+				fmt.Println("No tests to do")
+			}
 			testResult := ContactPeerForTest(fulfilledRequest.CID, fulfilledRequest.Peer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior)
 			if !testResult {
 				// Could not confirm storage ; need to request storage from other node
 				fmt.Println("requesting storage from other node ... ")
 				stoReq := datastructures.StorageRequest{CID: fulfilledRequest.CID, FileSize: fulfilledRequest.FileSize}
 				peersToRq := storagerequests.RemovePeerFromPeers(scores, fulfilledRequest.Peer)
-				storagerequests.StoreKCopiesOnNetwork(peersToRq, 1, stoReq, port, bytesAtPeers, &fulfilledRequests, scoreDecreaseRefStoReq)
+				storagerequests.StoreKCopiesOnNetwork(peersToRq, 1, stoReq, port, bytesAtPeers, fulfilledRequests, scoreDecreaseRefStoReq)
 			}
 		}
 	}

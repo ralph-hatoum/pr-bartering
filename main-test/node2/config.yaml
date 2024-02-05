@@ -1,6 +1,8 @@
-Port: 8081
+Port: 8083
 
 TotalStorage: 40000000
+
+DataCopies: 3
 
 BarteringInitialScore: 10.0
 BarteringFactorAcceptableRatio: 0.3

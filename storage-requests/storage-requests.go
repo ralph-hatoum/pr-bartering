@@ -21,7 +21,7 @@ func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, K int, storage
 	tries := 0
 
 	for tries < 3 {
-		peersToRequest, err := ElectStorageNodes(peerScores, K+5)
+		peersToRequest, err := ElectStorageNodes(peerScores, K)
 		if err != nil {
 			fmt.Println(err)
 			return 0
@@ -90,7 +90,7 @@ func addFulFilledRequestToFulfilledRequests(request datastructures.FulfilledRequ
 		Function to add fulfilled request object to fulfilled requests list
 		Arguments : fulfilledRequest, fulfilledRequests list
 	*/
-
+	//  TODO FIX
 	*requests = append(*requests, request)
 }
 
@@ -101,9 +101,13 @@ func updateFulfilledRequests(CID string, peer string, fulfilledRequests *[]datas
 		Arguments : CID as string, peer id as string, fulfilled requests list pointer
 	*/
 
+	fmt.Println("Updating fulfilled requests")
+
+	fmt.Println("before : ", fulfilledRequests)
 	newRequest := buildFulfilledRequestObject(CID, peer)
 
 	addFulFilledRequestToFulfilledRequests(newRequest, fulfilledRequests)
+	fmt.Println("after : ", fulfilledRequests)
 
 }
 

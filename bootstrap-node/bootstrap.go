@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"bartering/utils"
 )
@@ -15,9 +16,16 @@ import (
 
 func main() {
 
+	args := os.Args
+
+	if len(args) != 2 {
+		fmt.Println("Missing bootstrap IP")
+		panic(-1)
+	}
+
 	fmt.Println("-- BOOTSTRAP NODE --")
 
-	address := "localhost"
+	address := args[1]
 	port := "8082"
 
 	fmt.Println("Listening on port ", port)
@@ -26,7 +34,7 @@ func main() {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("-- PEER CONNECTION -- HANDLING CONNECTION --")
-		peers := []string{"127.0.0.1"}
+		peers := []string{"134.214.202.223", "134.214.202.224"}
 		jsonResponse, err := json.Marshal(peers)
 		utils.ErrorHandler(err)
 
