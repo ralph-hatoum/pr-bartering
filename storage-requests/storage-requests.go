@@ -22,6 +22,7 @@ func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, K int, storage
 
 	for tries < 3 {
 		peersToRequest, err := ElectStorageNodes(peerScores, K)
+		// fmt.Println(peersToRequest)
 		if err != nil {
 			fmt.Println(err)
 			return 0
@@ -117,6 +118,8 @@ func RequestStorageFromPeer(peer string, storageRequest datastructures.StorageRe
 		Function to request storage from a peer
 		Arguments : peer id as string, storageRequest object, port to contact peer on as string, PeerStorageUse array, NodeScore array, fulfilledRequests array pointer
 	*/
+
+	fmt.Println("requesting storage from peer", peer)
 
 	storageRqMessage := BuildStorageRequestMessage(storageRequest)
 
@@ -295,29 +298,33 @@ func ElectStorageNodes(peerScores []datastructures.NodeScore, numberOfNodes int)
 		Arguments : nodeScore list, number of nodes as int
 		Returns : list of strings containing IPs of nodes to contact
 	*/
-
+	fmt.Println(peerScores)
 	if numberOfNodes > len(peerScores) {
 		return []string{}, errors.New("asking for more peers than we know")
 	}
 
 	electedNodesScores := []datastructures.NodeScore{}
 	for _, peerScore := range peerScores {
-
+		// fmt.Println(peerScore)
+		fmt.Println(electedNodesScores)
 		if len(electedNodesScores) < numberOfNodes {
 
 			electedNodesScores = append(electedNodesScores, peerScore)
 
-		} else {
-			for index, currentlyElectedNode := range electedNodesScores {
-
-				if currentlyElectedNode.Score < peerScore.Score {
-					electedNodesScores[index] = peerScore
-					break
-				}
-			}
 		}
+		// else {
+		// 	for index, currentlyElectedNode := range electedNodesScores {
+
+		// 		if currentlyElectedNode.Score < peerScore.Score {
+		// 			electedNodesScores[index] = peerScore
+		// 			break
+		// 		}
+		// 	}
+		// }
 
 	}
+
+	fmt.Println(electedNodesScores)
 
 	electedNodes := []string{}
 

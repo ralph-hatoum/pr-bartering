@@ -104,3 +104,19 @@ func TestElectStorageNodesLowAndHigh(t *testing.T) {
 // 		t.Errorf("garbage collection strategy not behaving properly")
 // 	}
 // }
+
+func TestElectStorageNodes(t *testing.T) {
+	scores := []datastructures.NodeScore{}
+	i := 0
+	score := 3.0
+	for i < 30 {
+		scores = append(scores, datastructures.NodeScore{NodeIP: "127.0.0.1", Score: score})
+		score += 0.5
+		i++
+	}
+
+	elected, _ := ElectStorageNodes(scores, 3)
+
+	fmt.Println(elected)
+
+}
