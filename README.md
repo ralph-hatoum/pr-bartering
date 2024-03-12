@@ -36,7 +36,7 @@ ipfs daemon &
 
 The protocol relies on a bootstrap system. Basically, whenever a new node connects to the network, it will contact the bootstrap to get a list of peers. We have to launch this bootstrap first. In a new terminal, run the following commands, from the root of this repository :
 ```
-cd bartering-node
+cd bootstrap-node
 go run bootstrap.go 127.0.0.1
 ```
 
