@@ -18,3 +18,5 @@ StoragetestingPassedTestIncrease: 0.2
 
 FailureModel : "weibull"
 NodeProfile : "peer"
+
+DataCopies: 2
