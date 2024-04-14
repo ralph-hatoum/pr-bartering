@@ -15,7 +15,7 @@ import (
 )
 
 func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, K int, storageRequest datastructures.StorageRequest, port string, bytesAtPeers []datastructures.PeerStorageUse, fulfilledRequests *[]datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64) int {
-
+	fmt.Println("StoreKcopiesOnNetwork; peers :",peerScores)
 	okRqs := 0
 	ans := ""
 	tries := 0
@@ -53,6 +53,7 @@ func RemovePeerFromPeers(peerScores []datastructures.NodeScore, peerToRm string)
 	for index, peer := range peerScores {
 		if peer.NodeIP == peerToRm {
 			peerScores = append(peerScores[:index], peerScores[index+1:]...)
+			return peerScores
 		}
 	}
 	return peerScores
@@ -298,7 +299,7 @@ func ElectStorageNodes(peerScores []datastructures.NodeScore, numberOfNodes int)
 		Arguments : nodeScore list, number of nodes as int
 		Returns : list of strings containing IPs of nodes to contact
 	*/
-	fmt.Println(peerScores)
+	fmt.Println("electStorageNodes; peers:",peerScores)
 	if numberOfNodes > len(peerScores) {
 		return []string{}, errors.New("asking for more peers than we know")
 	}

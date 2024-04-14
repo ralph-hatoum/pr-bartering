@@ -14,8 +14,6 @@ import (
 	storagetesting "bartering/storage-testing"
 )
 
-var NodeStorage float64
-var port = "8081"
 
 func main() {
 
@@ -35,15 +33,17 @@ func main() {
 
 	bootstrapIp := args[1]
 
-	fmt.Println("Extracting configuration")
 	config := configextractor.ConfigExtractor("config.yaml")
+
+	port := fmt.Sprint(config.Port)
+	NodeStorage := config.TotalStorage
 
 	configextractor.ConfigPrinter(config)
 
-	// storage_pool, pending_requests, fulfilled_storage, peers := functions.NodeStartup()
 	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers := functions.NodeStartup(bootstrapIp)
 
-	// path := "test-data/test.txt"
+	// mutex := sync.Mutex
+
 	fmt.Println("Bytes at peers :", bytesAtPeers)
 	fmt.Println("Bytes stored for peers : ", bytesForPeers)
 	fmt.Println("Fulfilled requests : ", fulfilled_requests)
@@ -67,6 +67,7 @@ func main() {
 		// PEER LISTENER - to receive messages from other peers
 		defer wg.Done()
 		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter)
+		// peersconnect.ListenPeersRequestsTCPFailure()
 	}()
 
 	wg.Add(1)
@@ -75,7 +76,7 @@ func main() {
 		defer wg.Done()
 		storagetesting.PeriodicTests(&fulfilled_requests, scores, config.StoragetestingTimerTimeoutSec, port, config.StoragetestingTestingPeriod, DecreaseBehavior, IncreaseBehavior, bytesAtPeers, config.StoragerequestsScoreDecreaseRefusedStoReq)
 	}()
-
+	fmt.Println("Main; peers :", scores)
 	wg.Add(1)
 	go func() {
 		// FSWATCHER - to upload data on network
