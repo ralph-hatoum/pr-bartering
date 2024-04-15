@@ -8,15 +8,12 @@ import (
 
 	"bartering/utils"
 	"bufio"
-	"strings"
 )
 
 /*
 	Code for bootstrap node - here a simple HTTP server
 	On 8082, bootstrap returns a list of peers as a list of ip addresses as strings
 */
-
-
 
 func main() {
 
@@ -36,7 +33,7 @@ func main() {
 
 	// Build IP peers array
 
-	peers, err := BuildPeersIPlist("./ips.txt",address)
+	peers, err := BuildPeersIPlist("./ips.txt")
 
 	if err != nil {
 		fmt.Println("Error building peer IP list")
@@ -48,19 +45,7 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("-- PEER CONNECTION -- HANDLING CONNECTION --")
 		// peers := []string{"134.214.202.223", "134.214.202.224"}
-
-		// Identify the client's IP address
-		clientIP := strings.Split(r.RemoteAddr, ":")[0]
-
-		// Filter out the client's IP from the list of peers if present
-		filteredPeers := []string{}
-		for _, peer := range peers {
-			if peer != clientIP {
-				filteredPeers = append(filteredPeers, peer)
-			}
-		}
-
-		jsonResponse, err := json.Marshal(filteredPeers)
+		jsonResponse, err := json.Marshal(peers)
 		utils.ErrorHandler(err)
 
 		w.Header().Set("Content-Type", "application/json")
@@ -75,7 +60,7 @@ func main() {
 
 }
 
-func BuildPeersIPlist(path string, ownAddress string) ([]string, error) {
+func BuildPeersIPlist(path string) ([]string, error) {
 
 	file, err := os.Open(path)
 
@@ -90,15 +75,7 @@ func BuildPeersIPlist(path string, ownAddress string) ([]string, error) {
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
-		peerAddress := scanner.Text()
-
-		// Remove quotes and parentheses
-		peerAddress = strings.Trim(peerAddress, "\"()")
-		
-
-		
-		peers = append(peers, peerAddress)
-		
+		peers = append(peers, scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
