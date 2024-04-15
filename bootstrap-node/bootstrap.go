@@ -36,7 +36,7 @@ func main() {
 
 	// Build IP peers array
 
-	peers, err := BuildPeersIPlist("./ips.txt",address)
+	peers, err := BuildPeersIPlist("./ips.txt")
 
 	if err != nil {
 		fmt.Println("Error building peer IP list")
@@ -75,7 +75,7 @@ func main() {
 
 }
 
-func BuildPeersIPlist(path string, ownAddress string) ([]string, error) {
+func BuildPeersIPlist(path string) ([]string, error) {
 
 	file, err := os.Open(path)
 
