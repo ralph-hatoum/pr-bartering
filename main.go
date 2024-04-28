@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"regexp"
+	// "regexp"
 	"sync"
 
 	configextractor "bartering/config-extractor"
@@ -21,15 +21,16 @@ func main() {
 
 	args := os.Args
 
-	ipRegex := regexp.MustCompile(`^(\d{1,3}\.){3}\d{1,3}$`)
+	// ipRegex := regexp.MustCompile(`^(\d{1,3}\.){3}\d{1,3}$`)
 
 	if len(args) != 2 {
 		fmt.Println("Not enough arguments ; use : ./bartering <bootstrap-IP>")
 		panic(-1)
-	} else if !ipRegex.MatchString(args[1]) {
-		fmt.Println("Argument invalid : must be an IP adress")
-		panic(-1)
 	}
+	// } else if !ipRegex.MatchString(args[1]) {
+	// 	fmt.Println("Argument invalid : must be an IP adress")
+	// 	panic(-1)
+	// }
 
 	bootstrapIp := args[1]
 

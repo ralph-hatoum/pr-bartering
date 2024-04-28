@@ -17,16 +17,16 @@ import (
 
 func main() {
 
-	args := os.Args
+	// args := os.Args
 
-	if len(args) != 2 {
-		fmt.Println("Missing bootstrap IP")
-		panic(-1)
-	}
+	// if len(args) != 2 {
+	// 	fmt.Println("Missing bootstrap IP")
+	// 	panic(-1)
+	// }
 
 	fmt.Println("-- BOOTSTRAP NODE --")
 
-	address := args[1]
+	address := "0.0.0.0"
 	port := "8082"
 
 	fmt.Println("Listening on port ", port)
