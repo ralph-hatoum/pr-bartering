@@ -24,14 +24,18 @@ jobs:
     - name: Build
       run: go build -o bartering
 
+    - name: Get commit SHA
+      id: commit_sha
+      run: echo "::set-output name=SHA::$(git rev-parse --short HEAD)"
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       with:
-        tag_name: v1.0.0
-        release_name: Release v1.0.0
+        tag_name: v1.0.0-${{ steps.commit_sha.outputs.SHA }}
+        release_name: Release-${{ steps.commit_sha.outputs.SHA }}
         body: |
           Changes in this release:
           - Describe your changes here
