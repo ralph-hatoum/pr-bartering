@@ -37,3 +37,4 @@ jobs:
           - Describe your changes here
         draft: false
         prerelease: false
+        files: bartering
