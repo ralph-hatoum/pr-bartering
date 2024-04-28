@@ -8,12 +8,15 @@ import (
 
 	"bartering/utils"
 	"bufio"
+	"strings"
 )
 
 /*
 	Code for bootstrap node - here a simple HTTP server
 	On 8082, bootstrap returns a list of peers as a list of ip addresses as strings
 */
+
+
 
 func main() {
 
@@ -45,7 +48,19 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("-- PEER CONNECTION -- HANDLING CONNECTION --")
 		// peers := []string{"134.214.202.223", "134.214.202.224"}
-		jsonResponse, err := json.Marshal(peers)
+
+		// Identify the client's IP address
+		clientIP := strings.Split(r.RemoteAddr, ":")[0]
+
+		// Filter out the client's IP from the list of peers if present
+		filteredPeers := []string{}
+		for _, peer := range peers {
+			if peer != clientIP {
+				filteredPeers = append(filteredPeers, peer)
+			}
+		}
+
+		jsonResponse, err := json.Marshal(filteredPeers)
 		utils.ErrorHandler(err)
 
 		w.Header().Set("Content-Type", "application/json")
@@ -75,7 +90,15 @@ func BuildPeersIPlist(path string) ([]string, error) {
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
-		peers = append(peers, scanner.Text())
+		peerAddress := scanner.Text()
+
+		// Remove quotes and parentheses
+		peerAddress = strings.Trim(peerAddress, "\"()")
+		
+
+		
+		peers = append(peers, peerAddress)
+		
 	}
 
 	if err := scanner.Err(); err != nil {
