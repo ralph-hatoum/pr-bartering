@@ -13,7 +13,6 @@ import (
 	storagetesting "bartering/storage-testing"
 )
 
-
 func main() {
 
 	msgCounter, _ := 0, 0
@@ -47,7 +46,6 @@ func main() {
 	fmt.Println("ratios at peers : ", ratiosAtPeers)
 	fmt.Println("stored for peers : ", storedForPeers)
 	fmt.Println("")
-	fmt.Println("Node started ! Listening on port ", port)
 
 	DecreaseBehavior, IncreaseBehavior := functions.IncreaseDecreaseBehaviors(config)
 
@@ -74,6 +72,8 @@ func main() {
 		defer wg.Done()
 		fswatcher.FsWatcher("./data", scores, config.DataCopies, port, bytesAtPeers, &fulfilled_requests, config.StoragerequestsScoreDecreaseRefusedStoReq)
 	}()
+
+	fmt.Println("Node started ! Listening on port ", port)
 
 	// TODO : BARTERER, FAILURESIM, DATASIM
 	wg.Wait()

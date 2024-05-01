@@ -23,17 +23,13 @@ func PeriodicTests(fulfilledRequests *[]datastructures.FulfilledRequest, scores 
 	fmt.Println("Periodic Tester started!")
 
 	for {
-		fmt.Println("before sleep")
 		time.Sleep(time.Duration(testingPeriod) * time.Second)
-		fmt.Println("after sleep")
-		fmt.Println(fulfilledRequests)
 		for _, fulfilledRequest := range *fulfilledRequests {
 			if len(*fulfilledRequests) == 0 {
 				fmt.Println("No tests to do")
 			}
 			testResult := ContactPeerForTest(fulfilledRequest.CID, fulfilledRequest.Peer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior)
 			if !testResult {
-				// Could not confirm storage ; need to request storage from other node
 				fmt.Println("requesting storage from other node ... ")
 				stoReq := datastructures.StorageRequest{CID: fulfilledRequest.CID, FileSize: fulfilledRequest.FileSize}
 				peersToRq := storagerequests.RemovePeerFromPeers(scores, fulfilledRequest.Peer)
@@ -58,7 +54,6 @@ func RequestTest(CID string, filesAtPeers []datastructures.FilesAtPeers, scores 
 	}
 
 	for _, storer := range storers {
-		// maybe parallelize ?
 		ContactPeerForTest(CID, storer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior)
 	}
 

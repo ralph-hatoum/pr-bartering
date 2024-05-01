@@ -3,7 +3,7 @@ package configextractor
 import (
 	"bartering/utils"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -14,7 +14,7 @@ import (
 
 type Config struct {
 	Port                                      int     `yaml:"Port"`
-	TotalStorage                              float64     `yaml:"TotalStorage"`
+	TotalStorage                              float64 `yaml:"TotalStorage"`
 	BarteringInitialScore                     float64 `yaml:"BarteringInitialScore"`
 	BarteringFactorAcceptableRatio            float64 `yaml:"BarteringFactorAcceptableRatio"`
 	BarteringRatioIncreaseRate                float64 `yaml:"BarteringRatioIncreaseRate"`
@@ -36,7 +36,7 @@ func ConfigExtractor(path string) Config {
 		Input : path to the config.yaml file
 		Output : Config object
 	*/
-	file, err := ioutil.ReadFile(path)
+	file, err := os.ReadFile(path)
 	utils.ErrorHandler(err)
 
 	config := Config{}

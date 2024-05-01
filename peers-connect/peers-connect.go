@@ -42,8 +42,6 @@ func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []dat
 
 	listener, err := net.Listen("tcp", ":"+port)
 
-	fmt.Println(ratiosForPeers)
-
 	utils.ErrorHandler(err)
 
 	defer listener.Close()
@@ -79,28 +77,19 @@ func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, byt
 	messageType := bufferString[:5]
 
 	if messageType == "StoRq" {
-
+		fmt.Println("Received storage request")
 		storagerequests.HandleStorageRequest(bufferString, conn, bytesForPeers, storedForPeers)
-		// storagerequests.HandleStorageRequestTimed(bufferString, conn, bytesAtPeers, storedForPeers, deletionQueue)
-
 	} else if messageType == "BarRq" {
-
 		remoteAddr := conn.RemoteAddr()
 		ip, _, err := net.SplitHostPort(remoteAddr.String())
 		utils.ErrorHandler(err)
 		fmt.Println("Received bartering request from peer", ip)
 		bartering.RespondToBarterMsg(bufferString, ip, nodeStorage, bytesAtPeers, scores, conn, ratios, factorAcceptableRatio, msgCounter)
-
 	} else if messageType == "TesRq" {
-
-		fmt.Println("Recieved test request")
 		CID := bufferString[5 : len(bufferString)-1]
-		fmt.Println(CID)
+		fmt.Println("Recieved test request for file ", CID)
 		storagetesting.HandleTest(CID, conn)
-
 	} else {
-
 		fmt.Println("Unrecognized message : ", bufferString)
-
 	}
 }
