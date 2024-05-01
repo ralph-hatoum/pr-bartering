@@ -32,7 +32,7 @@ func GetPeersFromBootstrapTCP(IP string, port string) string {
 
 	messageToBootstrap := "hello\n"
 
-	_, err = io.WriteString(conn, messageToBootstrap) // INCREASE NBMSG COUNTER
+	_, err = io.WriteString(conn, messageToBootstrap)
 	utils.ErrorHandler(err)
 
 	boostrapResponseReader := bufio.NewReader(conn)
