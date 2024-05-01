@@ -117,7 +117,7 @@ func Store(path string, storage_pool []string, pending_requests []datastructures
 			- add the storage requests to the pendingRequests list
 	*/
 
-	CID := api_ipfs.UploadToIPFS(path)
+	CID, _ := api_ipfs.UploadToIPFS(path)
 
 	storage_pool = append(storage_pool, CID)
 
