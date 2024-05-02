@@ -1,0 +1,13 @@
+FROM debian
+
+# Copy bootstrap code and configuration files
+COPY ../bootstrap /bin/
+
+# Set working directory
+WORKDIR /bin
+
+# Expose ports
+EXPOSE 8082
+
+# Run bootstrap command
+CMD ["/bin/bootstrap", "bootstrap"]
