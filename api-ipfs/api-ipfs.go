@@ -5,9 +5,15 @@ Functions to interact with the IPFS Daemon
 */
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"net/http"
 	"os/exec"
-	"strings"
+)
+
+const (
+	kuboRpcEndpoint = "http://localhost:5001"
 )
 
 func UploadToIPFS(path string) (string, error) {
@@ -17,18 +23,30 @@ func UploadToIPFS(path string) (string, error) {
 		Returns : CID (Content Identifier) as a string
 	*/
 
-	cmd := "ipfs"
-	cmdArgs := []string{"add", path}
+	addEndpoint := fmt.Sprintf("%s/api/v0/add", kuboRpcEndpoint)
+	addRequestBody := []byte(fmt.Sprintf(`{"path": %s}`, path))
 
-	cmdOutput, err := exec.Command(cmd, cmdArgs...).Output()
-
+	req, err := http.NewRequest("POST", addEndpoint, bytes.NewBuffer(addRequestBody))
 	if err != nil {
-		fmt.Println("ERROR : could not upload to IPFS")
-		return "", fmt.Errorf("could not upload to IPFS")
+		fmt.Println("could not create request for ipfs upload : ", err)
+		return "", fmt.Errorf("could not create request for ipfs upload : %s", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("could not request for ipfs upload : ", err)
+		return "", fmt.Errorf("could not request for ipfs upload : %s", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("could not read ipfs answer : %s", err)
 	}
 
-	CID := strings.Split(string(cmdOutput), " ")[1]
-
+	// TODO : extract CID from response
+	CID := ""
 	return CID, nil
 
 }
