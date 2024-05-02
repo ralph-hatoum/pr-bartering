@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+
+  ipfs:
+    image: ipfs/kubo:latest
+    networks:
+      bartering:
+        ipv4_address: 172.16.238.5
+  
+  bootstrap:
+    build:
+      context: ..
+      dockerfile: ./docker_test_bench/Dockerfiles/Dockerfile-bootstrap
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./ips.txt:/bin/ips.txt
+    networks:
+      bartering:
+        ipv4_address: 172.16.238.4
+
+  bartering-1:
+    depends_on:
+      - bootstrap
+    build:
+      context: ..
+      dockerfile: ./docker_test_bench/Dockerfiles/Dockerfile-node
+    volumes:
+      - ./data1:/bin/data
+    networks:
+      bartering:
+        ipv4_address: 172.16.238.2
+
+  bartering-2:
+    depends_on:
+      - bootstrap
+    build:
+      context: ..
+      dockerfile: ./docker_test_bench/Dockerfiles/Dockerfile-node
+    volumes:
+      - ./data2:/bin/data
+    networks:
+      bartering:
+        ipv4_address: 172.16.238.3
+
+  data-writer:
+    depends_on:
+      - bartering-1
+      - bartering-2
+    volumes:
+      - ./data2:/usr/src/app/data2
+      - ./data1:/usr/src/app/data1
+    build: 
+      context: ..
+      dockerfile: ./docker_test_bench/Dockerfiles/Dockerfile-writer
+
+networks:
+  bartering:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.238.0/24

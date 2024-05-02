@@ -1,0 +1,30 @@
+FROM debian
+
+# Copy bootstrap code and configuration files
+COPY ../bartering /bin/
+COPY ../config.yaml /bin/
+COPY ../entrypoint.sh /bin/
+
+# Set working directory
+WORKDIR /bin
+
+# Expose ports
+EXPOSE 8082
+
+# create data dir
+# RUN ["mkdir", "-p","/bin/data"]
+# Run bootstrap command
+
+RUN ["apt-get", "update"]
+
+RUN ["apt-get","install", "-y","wget"]
+
+RUN ["wget", "https://dist.ipfs.tech/kubo/v0.28.0/kubo_v0.28.0_linux-amd64.tar.gz"]
+
+RUN ["tar","-xvzf", "kubo_v0.28.0_linux-amd64.tar.gz"]
+
+RUN ["bash", "kubo/install.sh"]
+
+RUN ["ipfs","init"]
+
+CMD ["sh", "-c", "ipfs daemon > /dev/null 2>&1 & /bin/bartering bootstrap"]
