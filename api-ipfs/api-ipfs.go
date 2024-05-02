@@ -8,11 +8,9 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
-
-	"bartering/utils"
 )
 
-func UploadToIPFS(path string) string {
+func UploadToIPFS(path string) (string, error) {
 	/*
 		To add a file to IPFS
 		Arguments : path to file as a string
@@ -24,15 +22,18 @@ func UploadToIPFS(path string) string {
 
 	cmdOutput, err := exec.Command(cmd, cmdArgs...).Output()
 
-	utils.ErrorHandler(err)
+	if err != nil {
+		fmt.Println("ERROR : could not upload to IPFS")
+		return "", fmt.Errorf("could not upload to IPFS")
+	}
 
 	CID := strings.Split(string(cmdOutput), " ")[1]
 
-	return CID
+	return CID, nil
 
 }
 
-func PinToIPFS(cid string) string {
+func PinToIPFS(cid string) (string, error) {
 	/*
 		To pin a file to IPFS
 		Arguments : CID (Content Identifier) of the file as a string
@@ -47,13 +48,16 @@ func PinToIPFS(cid string) string {
 
 	cmdOutput, err := exec.Command(cmd, cmdArgs...).Output()
 
-	utils.ErrorHandler(err)
+	if err != nil {
+		fmt.Println("ERROR : could not pin to IPFS")
+		return "", fmt.Errorf("could not pin to IPFS")
+	}
 
-	return string(cmdOutput)
+	return string(cmdOutput), nil
 
 }
 
-func UnpinIPFS(cid string) string {
+func UnpinIPFS(cid string) (string, error) {
 	/*
 		To unpin a file to IPFS
 		Arguments : CID (Content Identifier) of the file as a string
@@ -65,12 +69,15 @@ func UnpinIPFS(cid string) string {
 
 	cmdOutput, err := exec.Command(cmd, cmdArgs...).Output()
 
-	utils.ErrorHandler(err)
+	if err != nil {
+		fmt.Println("ERROR : could not unpin to IPFS")
+		return "", fmt.Errorf("could not unpin to IPFS")
+	}
 
-	return string(cmdOutput)
+	return string(cmdOutput), nil
 }
 
-func CatIPFS(cid string) string {
+func CatIPFS(cid string) (string, error) {
 	/*
 		To cat a file on IPFS (see content)
 		Arguments : CID (Content Identifier) of the file as a string
@@ -82,7 +89,10 @@ func CatIPFS(cid string) string {
 
 	cmdOutput, err := exec.Command(cmd, cmdArgs...).Output()
 
-	utils.ErrorHandler(err)
+	if err != nil {
+		fmt.Println("ERROR : could not cat to IPFS")
+		return "", fmt.Errorf("could not cat to IPFS")
+	}
 
-	return string(cmdOutput)
+	return string(cmdOutput), nil
 }

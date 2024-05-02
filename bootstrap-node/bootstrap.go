@@ -16,16 +16,7 @@ import (
 	On 8082, bootstrap returns a list of peers as a list of ip addresses as strings
 */
 
-
-
 func main() {
-
-	// args := os.Args
-
-	// if len(args) != 2 {
-	// 	fmt.Println("Missing bootstrap IP")
-	// 	panic(-1)
-	// }
 
 	fmt.Println("-- BOOTSTRAP NODE --")
 
@@ -94,11 +85,9 @@ func BuildPeersIPlist(path string) ([]string, error) {
 
 		// Remove quotes and parentheses
 		peerAddress = strings.Trim(peerAddress, "\"()")
-		
 
-		
 		peers = append(peers, peerAddress)
-		
+
 	}
 
 	if err := scanner.Err(); err != nil {

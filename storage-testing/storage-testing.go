@@ -23,17 +23,13 @@ func PeriodicTests(fulfilledRequests *[]datastructures.FulfilledRequest, scores 
 	fmt.Println("Periodic Tester started!")
 
 	for {
-		fmt.Println("before sleep")
 		time.Sleep(time.Duration(testingPeriod) * time.Second)
-		fmt.Println("after sleep")
-		fmt.Println(fulfilledRequests)
 		for _, fulfilledRequest := range *fulfilledRequests {
 			if len(*fulfilledRequests) == 0 {
 				fmt.Println("No tests to do")
 			}
 			testResult := ContactPeerForTest(fulfilledRequest.CID, fulfilledRequest.Peer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior)
 			if !testResult {
-				// Could not confirm storage ; need to request storage from other node
 				fmt.Println("requesting storage from other node ... ")
 				stoReq := datastructures.StorageRequest{CID: fulfilledRequest.CID, FileSize: fulfilledRequest.FileSize}
 				peersToRq := storagerequests.RemovePeerFromPeers(scores, fulfilledRequest.Peer)
@@ -58,7 +54,6 @@ func RequestTest(CID string, filesAtPeers []datastructures.FilesAtPeers, scores 
 	}
 
 	for _, storer := range storers {
-		// maybe parallelize ?
 		ContactPeerForTest(CID, storer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior)
 	}
 
@@ -71,11 +66,14 @@ func HandleTest(CID string, conn net.Conn) {
 		Arguments : CID as a string, connection as net.Conn
 	*/
 
-	answer := computeExpectedAnswer(CID)
-	fmt.Println("Proof computed : ", answer)
-	buffer := []byte(answer)
-	conn.Write(buffer) // INCREASE NBMSG COUNTER
-
+	answer, err := computeExpectedAnswer(CID)
+	if err != nil {
+		fmt.Println("could not compute answer")
+	} else {
+		fmt.Println("Proof computed : ", answer)
+		buffer := []byte(answer)
+		conn.Write(buffer)
+	}
 }
 
 func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario) bool {
@@ -196,7 +194,7 @@ func findScoreVariation(variations []datastructures.ScoreVariationScenario, scen
 	return 0.0, errors.New("scenario " + scenario + " not found")
 }
 
-func computeExpectedAnswer(CID string) []byte {
+func computeExpectedAnswer(CID string) ([]byte, error) {
 
 	/*
 		Given a CID, we compute the answer to a test (for now simple SHA256 hash but this will need to implement filecoin proof)
@@ -205,14 +203,18 @@ func computeExpectedAnswer(CID string) []byte {
 	*/
 
 	CID = CID[:46]
-	contentString := api_ipfs.CatIPFS(CID)
+	contentString, err := api_ipfs.CatIPFS(CID)
+	if err != nil {
+		fmt.Println("could not cat content on IPFS - is IPFS running ?")
+		return []byte{}, fmt.Errorf("could not cat content on IPFS")
+	}
 	contentBytes := []byte(contentString)
 	hasher := sha256.New()
 
 	hasher.Write(contentBytes)
 	proofResult := hasher.Sum(nil)
 
-	return proofResult
+	return proofResult, nil
 }
 
 /* TODO : unifiy decrease and increase functions into a single update function, and
@@ -262,6 +264,6 @@ func checkAnswer(answer string, CID string) bool {
 		Arguments : answer recieved as a string, CID of the file to test a string
 	*/
 
-	expectedAnswer := computeExpectedAnswer(CID)
+	expectedAnswer, _ := computeExpectedAnswer(CID)
 	return string(expectedAnswer) == answer
 }

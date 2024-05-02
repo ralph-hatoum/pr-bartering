@@ -15,14 +15,12 @@ import (
 )
 
 func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, K int, storageRequest datastructures.StorageRequest, port string, bytesAtPeers []datastructures.PeerStorageUse, fulfilledRequests *[]datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64) int {
-	fmt.Println("StoreKcopiesOnNetwork; peers :",peerScores)
 	okRqs := 0
 	ans := ""
 	tries := 0
 
 	for tries < 3 {
 		peersToRequest, err := ElectStorageNodes(peerScores, K)
-		// fmt.Println(peersToRequest)
 		if err != nil {
 			fmt.Println(err)
 			return 0
@@ -107,11 +105,10 @@ func updateFulfilledRequests(CID string, peer string, fulfilledRequests *[]datas
 
 	fmt.Println("Updating fulfilled requests")
 
-	fmt.Println("before : ", fulfilledRequests)
 	newRequest := buildFulfilledRequestObject(CID, peer)
 
 	addFulFilledRequestToFulfilledRequests(newRequest, fulfilledRequests)
-	fmt.Println("after : ", fulfilledRequests)
+	fmt.Println("Updated fulfilled requests : ", fulfilledRequests)
 
 }
 
@@ -122,7 +119,7 @@ func RequestStorageFromPeer(peer string, storageRequest datastructures.StorageRe
 		Arguments : peer id as string, storageRequest object, port to contact peer on as string, PeerStorageUse array, NodeScore array, fulfilledRequests array pointer
 	*/
 
-	fmt.Println("requesting storage from peer", peer)
+	fmt.Println("Requesting storage from peer", peer)
 
 	storageRqMessage := BuildStorageRequestMessage(storageRequest)
 
@@ -141,7 +138,6 @@ func RequestStorageFromPeer(peer string, storageRequest datastructures.StorageRe
 	responseString, err := response.ReadString('\n')
 
 	utils.ErrorHandler(err)
-	fmt.Println(responseString)
 
 	if responseString == "OK\n" {
 		fmt.Println("Peer ", peer, " stored file with CID ", storageRequest.CID, " successfully.")
@@ -223,12 +219,17 @@ func HandleStorageRequest(bufferString string, conn net.Conn, bytesForPeers []da
 	if CheckRqValidity(request) {
 		fmt.Println("Request ", request, " valid, storing ! ")
 		fmt.Println("Pinning to IPFS ...")
-		api_ipfs.PinToIPFS(CID)
-		fmt.Println("File pinned to IPFS!")
-		messageToPeer = "OK\n"
-		updateBytesForPeers(bytesForPeers, peer, fileSizeFloat)
-		updateFulfilledRequests(CID, peer, storedForPeers)
-		fmt.Println("stored for peers : ", storedForPeers)
+		_, err := api_ipfs.PinToIPFS(CID)
+		if err != nil {
+			fmt.Println("File pinned to IPFS!")
+			messageToPeer = "OK\n"
+			updateBytesForPeers(bytesForPeers, peer, fileSizeFloat)
+			updateFulfilledRequests(CID, peer, storedForPeers)
+			fmt.Println("stored for peers : ", storedForPeers)
+		} else {
+			fmt.Println("could not pin to ipfs - is ipfs running ?")
+		}
+
 	} else {
 		fmt.Println("Request ", request, " not valid, not storing ! ")
 
@@ -303,33 +304,18 @@ func ElectStorageNodes(peerScores []datastructures.NodeScore, numberOfNodes int)
 		Arguments : nodeScore list, number of nodes as int
 		Returns : list of strings containing IPs of nodes to contact
 	*/
-	fmt.Println("electStorageNodes; peers:",peerScores)
 	if numberOfNodes > len(peerScores) {
 		return []string{}, errors.New("asking for more peers than we know")
 	}
 
 	electedNodesScores := []datastructures.NodeScore{}
 	for _, peerScore := range peerScores {
-		// fmt.Println(peerScore)
-		fmt.Println(electedNodesScores)
 		if len(electedNodesScores) < numberOfNodes {
 
 			electedNodesScores = append(electedNodesScores, peerScore)
 
 		}
-		// else {
-		// 	for index, currentlyElectedNode := range electedNodesScores {
-
-		// 		if currentlyElectedNode.Score < peerScore.Score {
-		// 			electedNodesScores[index] = peerScore
-		// 			break
-		// 		}
-		// 	}
-		// }
-
 	}
-
-	fmt.Println(electedNodesScores)
 
 	electedNodes := []string{}
 
@@ -357,11 +343,9 @@ func ElectStorageNodesLowAndHigh(peerScores []datastructures.NodeScore, numberOf
 		nbNodesChosen += 1
 		peerScores = peerScores[1:]
 	}
-	// index := 1
 	for nbNodesChosen < numberOfNodes {
 		chosen = append(chosen, peerScores[len(peerScores)-1])
 		nbNodesChosen += 1
-		// fmt.Println(len(peerScores))
 		peerScores = peerScores[:len(peerScores)-1]
 	}
 	return chosen

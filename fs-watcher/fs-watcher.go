@@ -40,10 +40,14 @@ func FsWatcher(path string, peerScores []datastructures.NodeScore, K int, port s
 					// Handle the file creation event
 					fmt.Println("New file ", filePath, " detected, storing on network")
 					// go functions.Store(filePath, storage_pool, pendingRequests) // this still does not actually trigger storage on the network
-					CID := api_ipfs.UploadToIPFS(filePath)
-					fmt.Println("FS watcher; peers : ", peerScores)
-					storageRequest := datastructures.StorageRequest{CID: CID, FileSize: float64(getFileSize(filePath))}
-					go storagerequests.StoreKCopiesOnNetwork(peerScores, K, storageRequest, port, bytesAtPeers, fulfilledRequests, scoreDecreaseRefStoReq)
+					CID, err := api_ipfs.UploadToIPFS(filePath)
+					if err != nil {
+						fmt.Println("Could not pin to IPFS -- Is IPFS running ?")
+					} else {
+						fmt.Println("File uploaded ", filePath, " uploaded to IPFS ; requesting storage from peer now")
+						storageRequest := datastructures.StorageRequest{CID: CID, FileSize: float64(getFileSize(filePath))}
+						go storagerequests.StoreKCopiesOnNetwork(peerScores, K, storageRequest, port, bytesAtPeers, fulfilledRequests, scoreDecreaseRefStoReq)
+					}
 				}
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					filePath := event.Name
