@@ -39,8 +39,11 @@ func InitiateBarter(peer string, ratios []datastructures.NodeRatio, ratioIncreas
 	} else {
 		// in this case we have received a response to our barter message, we have to deal w it
 		ratio, err := strconv.ParseFloat(response[:len(response)-1], 64)
-		utils.ErrorHandler(err)
-		updatePeerRatio(ratios, peer, ratio)
+		if err != nil {
+			return fmt.Errorf("could not decipher barter message")
+		} else {
+			updatePeerRatio(ratios, peer, ratio)
+		}
 	}
 	return nil
 }

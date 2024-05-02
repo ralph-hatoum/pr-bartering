@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	// "regexp"
 	"sync"
 
 	configextractor "bartering/config-extractor"
@@ -21,16 +20,10 @@ func main() {
 
 	args := os.Args
 
-	// ipRegex := regexp.MustCompile(`^(\d{1,3}\.){3}\d{1,3}$`)
-
 	if len(args) != 2 {
 		fmt.Println("Not enough arguments ; use : ./bartering <bootstrap-IP>")
 		panic(-1)
 	}
-	// } else if !ipRegex.MatchString(args[1]) {
-	// 	fmt.Println("Argument invalid : must be an IP adress")
-	// 	panic(-1)
-	// }
 
 	bootstrapIp := args[1]
 
@@ -42,8 +35,6 @@ func main() {
 	configextractor.ConfigPrinter(config)
 
 	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers := functions.NodeStartup(bootstrapIp)
-
-	// mutex := sync.Mutex
 
 	fmt.Println("Bytes at peers :", bytesAtPeers)
 	fmt.Println("Bytes stored for peers : ", bytesForPeers)
@@ -60,7 +51,7 @@ func main() {
 
 	DecreaseBehavior, IncreaseBehavior := functions.IncreaseDecreaseBehaviors(config)
 
-	var wg sync.WaitGroup // Import "sync" package to use WaitGroup.
+	var wg sync.WaitGroup
 
 	wg.Add(1)
 	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
@@ -68,7 +59,6 @@ func main() {
 		// PEER LISTENER - to receive messages from other peers
 		defer wg.Done()
 		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter)
-		// peersconnect.ListenPeersRequestsTCPFailure()
 	}()
 
 	wg.Add(1)
