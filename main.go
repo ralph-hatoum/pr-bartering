@@ -7,6 +7,7 @@ import (
 
 	configextractor "bartering/config-extractor"
 	datastructures "bartering/data-structures"
+	"bartering/dumper"
 	fswatcher "bartering/fs-watcher"
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
@@ -50,6 +51,13 @@ func main() {
 	DecreaseBehavior, IncreaseBehavior := functions.IncreaseDecreaseBehaviors(config)
 
 	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		// DUMPER - to have access to the state of all data structures (for testing purposes)
+		defer wg.Done()
+		dumper.Dumper(bytesAtPeers, bytesForPeers, fulfilled_requests, storage_pool, pending_requests, peers, scores, ratiosForPeers, ratiosAtPeers, storedForPeers)
+	}()
 
 	wg.Add(1)
 	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
