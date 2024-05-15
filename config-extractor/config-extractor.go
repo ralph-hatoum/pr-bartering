@@ -14,7 +14,7 @@ import (
 
 type Config struct {
 	Port                                      int     `yaml:"Port"`
-	TotalStorage                              float64     `yaml:"TotalStorage"`
+	TotalStorage                              int     `yaml:"TotalStorage"`
 	BarteringInitialScore                     float64 `yaml:"BarteringInitialScore"`
 	BarteringFactorAcceptableRatio            float64 `yaml:"BarteringFactorAcceptableRatio"`
 	BarteringRatioIncreaseRate                float64 `yaml:"BarteringRatioIncreaseRate"`
@@ -58,7 +58,7 @@ func ConfigPrinter(conf Config) {
 	Read config -- launching node with the following parameters :
 	Port : %d
 	Number of data copies : %d
-	Node total storage : %f
+	Node total storage : %d
 	Initial scores attributed to peers : %f
 	Maximum acceptable ratio factor : %f
 	Ratio increase rate : %f

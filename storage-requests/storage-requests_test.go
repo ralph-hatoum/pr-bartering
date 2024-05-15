@@ -120,16 +120,3 @@ func TestElectStorageNodes(t *testing.T) {
 	fmt.Println(elected)
 
 }
-
-func TestRemovePeerFromPeers(t *testing.T) {
-	fmt.Println("Test Remove Peer From Peers")
-	peerScore1 := datastructures.NodeScore{NodeIP:"127.0.0.1", Score: 10.0}
-	peerScore2 := datastructures.NodeScore{NodeIP:"127.0.0.2", Score: 10.0}
-	peerScore3 := datastructures.NodeScore{NodeIP:"127.0.0.3", Score: 10.0}
-	peerScore4 := datastructures.NodeScore{NodeIP:"127.0.0.4", Score: 10.0}
-
-	peerScores := []datastructures.NodeScore{peerScore1,peerScore2,peerScore3,peerScore4}
-
-	peerScores = RemovePeerFromPeers(peerScores, "127.0.0.1")
-	fmt.Println(peerScores)
-}

@@ -5,11 +5,13 @@ import (
 	datastructures "bartering/data-structures"
 	storagerequests "bartering/storage-requests"
 	"bartering/utils"
+	"context"
 	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io"
 	"net"
+	"sync"
 	"time"
 )
 
@@ -79,66 +81,69 @@ func HandleTest(CID string, conn net.Conn) {
 }
 
 func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario) bool {
+    conn, err := net.Dial("tcp", peer+":"+port)
+    utils.ErrorHandler(err)
+    defer conn.Close()
 
-	/*
-		Function to contact a peer to ask for a test, check answer and update score accordingly
-		Arguments : CID of file to test a string, peer IP as string, scores as array of NodeScore objects
-	*/
+    ctx, cancel := context.WithCancel(context.Background())
+    defer cancel()
 
-	conn, err := net.Dial("tcp", peer+":"+port)
-	utils.ErrorHandler(err)
+    message := "TesRq" + CID
+    _, err = io.WriteString(conn, message)
+    utils.ErrorHandler(err)
 
-	defer conn.Close()
+    responseChannel := make(chan string)
+    var wg sync.WaitGroup
+    wg.Add(1)
 
-	message := "TesRq" + CID
+    go handleResponse(ctx, &wg, responseChannel, conn)
 
-	_, err = io.WriteString(conn, message) // INCREASE NBMSG COUNTER
+    timer := time.NewTimer(time.Duration(timerTimeoutSec) * time.Second)
+    defer timer.Stop()
 
-	utils.ErrorHandler(err)
+    defer wg.Wait()  // Ensures `wg.Wait()` is called before function exit
 
-	responseChannel := make(chan string)
-
-	go handleResponse(responseChannel, conn)
-
-	timer := time.NewTimer(time.Duration(timerTimeoutSec) * time.Second)
-
-	select {
-	case <-timer.C:
-		fmt.Println("Timeout: No response received.")
-		// Here, score should be decreased as no response was received
-		decreaseScore(peer, "failedTestTimeout", scores, DecreasingBehavior)
-		return false
-	case response := <-responseChannel:
-		fmt.Println("Response received")
-		// Here, response was received, it should be checked if the response is correct or wrong to decide how score should evolve
-		if checkAnswer(response, CID) {
-			fmt.Println("test passed")
-			increaseScore(peer, "passedTest", scores, IncreasingBehavior)
-			return true
-		} else {
-			fmt.Println("test not passed")
-			decreaseScore(peer, "failedTestWrongAns", scores, DecreasingBehavior)
-			return false
-			// HERE, SHOULD REQUEST STORAGE FROM DIFFERENT NODE TO ENSURE WE HAVE REDUNDANCY
-		}
-	}
+    select {
+    case <-timer.C:
+        fmt.Println("Timeout: No response received.")
+        decreaseScore(peer, "failedTestTimeout", scores, DecreasingBehavior)
+        cancel() // Cancel the context to signal handleResponse
+        return false
+    case response := <-responseChannel:
+        if checkAnswer(response, CID) {
+            fmt.Println("test passed")
+            increaseScore(peer, "passedTest", scores, IncreasingBehavior)
+            return true
+        } else {
+            fmt.Println("test not passed")
+            decreaseScore(peer, "failedTestWrongAns", scores, DecreasingBehavior)
+            return false
+        }
+    }
 }
 
-func handleResponse(responseChannel chan<- string, conn net.Conn) {
 
-	/*
-		Function to handle a response recieved when requesting a test from a peer
-		Arguments : string chanel, connection as net.Conn
-	*/
+func handleResponse(ctx context.Context, wg *sync.WaitGroup, responseChannel chan<- string, conn net.Conn) {
+	defer wg.Done()
+	defer close(responseChannel)
 
 	buffer := make([]byte, 1024)
-	n, err := conn.Read(buffer)
-	if err != nil {
-		fmt.Println("Error reading response:", err)
-		return
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Println("Context canceled, exiting handleResponse")
+			return
+		default:
+			n, err := conn.Read(buffer)
+			if err != nil {
+				fmt.Println("Error reading response:", err)
+				return
+			}
+			response := string(buffer[:n])
+			responseChannel <- response
+			return // Successfully read response, exit goroutine
+		}
 	}
-	response := string(buffer[:n])
-	responseChannel <- response
 }
 
 func findStorers(CID string, filesAtPeers []datastructures.FilesAtPeers) ([]string, error) {
