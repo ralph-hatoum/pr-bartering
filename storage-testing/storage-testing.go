@@ -5,11 +5,13 @@ import (
 	datastructures "bartering/data-structures"
 	storagerequests "bartering/storage-requests"
 	"bartering/utils"
+	"context"
 	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io"
 	"net"
+	"sync"
 	"time"
 )
 
@@ -30,6 +32,7 @@ func PeriodicTests(fulfilledRequests *[]datastructures.FulfilledRequest, scores 
 			}
 			testResult := ContactPeerForTest(fulfilledRequest.CID, fulfilledRequest.Peer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior)
 			if !testResult {
+				// Could not confirm storage ; need to request storage from other node
 				fmt.Println("requesting storage from other node ... ")
 				stoReq := datastructures.StorageRequest{CID: fulfilledRequest.CID, FileSize: fulfilledRequest.FileSize}
 				peersToRq := storagerequests.RemovePeerFromPeers(scores, fulfilledRequest.Peer)
@@ -54,6 +57,7 @@ func RequestTest(CID string, filesAtPeers []datastructures.FilesAtPeers, scores 
 	}
 
 	for _, storer := range storers {
+		// maybe parallelize ?
 		ContactPeerForTest(CID, storer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior)
 	}
 
@@ -66,49 +70,43 @@ func HandleTest(CID string, conn net.Conn) {
 		Arguments : CID as a string, connection as net.Conn
 	*/
 
-	answer, err := computeExpectedAnswer(CID)
-	if err != nil {
-		fmt.Println("could not compute answer")
-	} else {
-		fmt.Println("Proof computed : ", answer)
-		buffer := []byte(answer)
-		conn.Write(buffer)
-	}
+	answer := computeExpectedAnswer(CID)
+	fmt.Println("Proof computed : ", answer)
+	buffer := []byte(answer)
+	conn.Write(buffer) // INCREASE NBMSG COUNTER
+
 }
 
 func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario) bool {
-
-	/*
-		Function to contact a peer to ask for a test, check answer and update score accordingly
-		Arguments : CID of file to test a string, peer IP as string, scores as array of NodeScore objects
-	*/
-
 	conn, err := net.Dial("tcp", peer+":"+port)
 	utils.ErrorHandler(err)
-
 	defer conn.Close()
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	message := "TesRq" + CID
-
-	_, err = io.WriteString(conn, message) // INCREASE NBMSG COUNTER
-
+	_, err = io.WriteString(conn, message)
 	utils.ErrorHandler(err)
 
 	responseChannel := make(chan string)
+	var wg sync.WaitGroup
+	wg.Add(1)
 
-	go handleResponse(responseChannel, conn)
+	go handleResponse(ctx, &wg, responseChannel, conn)
 
 	timer := time.NewTimer(time.Duration(timerTimeoutSec) * time.Second)
+	defer timer.Stop()
+
+	defer wg.Wait() // Ensures `wg.Wait()` is called before function exit
 
 	select {
 	case <-timer.C:
 		fmt.Println("Timeout: No response received.")
-		// Here, score should be decreased as no response was received
 		decreaseScore(peer, "failedTestTimeout", scores, DecreasingBehavior)
+		cancel() // Cancel the context to signal handleResponse
 		return false
 	case response := <-responseChannel:
-		fmt.Println("Response received")
-		// Here, response was received, it should be checked if the response is correct or wrong to decide how score should evolve
 		if checkAnswer(response, CID) {
 			fmt.Println("test passed")
 			increaseScore(peer, "passedTest", scores, IncreasingBehavior)
@@ -117,26 +115,31 @@ func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeSco
 			fmt.Println("test not passed")
 			decreaseScore(peer, "failedTestWrongAns", scores, DecreasingBehavior)
 			return false
-			// HERE, SHOULD REQUEST STORAGE FROM DIFFERENT NODE TO ENSURE WE HAVE REDUNDANCY
 		}
 	}
 }
 
-func handleResponse(responseChannel chan<- string, conn net.Conn) {
-
-	/*
-		Function to handle a response recieved when requesting a test from a peer
-		Arguments : string chanel, connection as net.Conn
-	*/
+func handleResponse(ctx context.Context, wg *sync.WaitGroup, responseChannel chan<- string, conn net.Conn) {
+	defer wg.Done()
+	defer close(responseChannel)
 
 	buffer := make([]byte, 1024)
-	n, err := conn.Read(buffer)
-	if err != nil {
-		fmt.Println("Error reading response:", err)
-		return
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Println("Context canceled, exiting handleResponse")
+			return
+		default:
+			n, err := conn.Read(buffer)
+			if err != nil {
+				fmt.Println("Error reading response:", err)
+				return
+			}
+			response := string(buffer[:n])
+			responseChannel <- response
+			return // Successfully read response, exit goroutine
+		}
 	}
-	response := string(buffer[:n])
-	responseChannel <- response
 }
 
 func findStorers(CID string, filesAtPeers []datastructures.FilesAtPeers) ([]string, error) {
@@ -194,7 +197,7 @@ func findScoreVariation(variations []datastructures.ScoreVariationScenario, scen
 	return 0.0, errors.New("scenario " + scenario + " not found")
 }
 
-func computeExpectedAnswer(CID string) ([]byte, error) {
+func computeExpectedAnswer(CID string) []byte {
 
 	/*
 		Given a CID, we compute the answer to a test (for now simple SHA256 hash but this will need to implement filecoin proof)
@@ -203,18 +206,14 @@ func computeExpectedAnswer(CID string) ([]byte, error) {
 	*/
 
 	CID = CID[:46]
-	contentString, err := api_ipfs.CatIPFS(CID)
-	if err != nil {
-		fmt.Println("could not cat content on IPFS - is IPFS running ?")
-		return []byte{}, fmt.Errorf("could not cat content on IPFS")
-	}
+	contentString, _ := api_ipfs.CatIPFS(CID)
 	contentBytes := []byte(contentString)
 	hasher := sha256.New()
 
 	hasher.Write(contentBytes)
 	proofResult := hasher.Sum(nil)
 
-	return proofResult, nil
+	return proofResult
 }
 
 /* TODO : unifiy decrease and increase functions into a single update function, and
@@ -264,6 +263,6 @@ func checkAnswer(answer string, CID string) bool {
 		Arguments : answer recieved as a string, CID of the file to test a string
 	*/
 
-	expectedAnswer, _ := computeExpectedAnswer(CID)
+	expectedAnswer := computeExpectedAnswer(CID)
 	return string(expectedAnswer) == answer
 }
