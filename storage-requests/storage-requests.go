@@ -220,7 +220,7 @@ func HandleStorageRequest(bufferString string, conn net.Conn, bytesForPeers []da
 		fmt.Println("Request ", request, " valid, storing ! ")
 		fmt.Println("Pinning to IPFS ...")
 		_, err := api_ipfs.PinToIPFS(CID)
-		if err != nil {
+		if err == nil {
 			fmt.Println("File pinned to IPFS!")
 			messageToPeer = "OK\n"
 			updateBytesForPeers(bytesForPeers, peer, fileSizeFloat)
