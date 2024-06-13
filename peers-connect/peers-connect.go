@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
 	"bartering/bartering-api"
 	datastructures "bartering/data-structures"
@@ -39,17 +40,39 @@ func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []dat
 	/*
 		TCP server to receive messages from peers
 	*/
-
+	maxConnections := 4 // Maximum number of concurrent connections
 	listener, err := net.Listen("tcp", ":"+port)
-
-	fmt.Println(ratiosForPeers)
-
-	utils.ErrorHandler(err)
-
+	if err != nil {
+		utils.ErrorHandler(err)
+		return
+	}
 	defer listener.Close()
+
+	// Create a channel to limit the number of concurrent connections
+	connLimiter := make(chan struct{}, maxConnections)
+
 	for {
-		conn, _ := listener.Accept()
-		go handleConnection(conn, nodeStorage, bytesAtPeers, scores, ratiosAtPeers, bytesForPeers, storedForPeers, factorAcceptableRatio, deletienQueue, msgCounter)
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Println("Error accepting connection:", err)
+			continue
+		}
+
+		connLimiter <- struct{}{} // Block if the limit is reached
+		go func(conn net.Conn) {
+			defer func() {
+				<-connLimiter // Release the slot
+				conn.Close()
+			}()
+
+			// Set TCP keep-alive
+			if tcpConn, ok := conn.(*net.TCPConn); ok {
+				tcpConn.SetKeepAlive(true)
+				tcpConn.SetKeepAlivePeriod(3 * time.Minute) // Keep-alive period
+			}
+
+			handleConnection(conn, nodeStorage, bytesAtPeers, scores, ratiosAtPeers, bytesForPeers, storedForPeers, factorAcceptableRatio, deletienQueue, msgCounter)
+		}(conn)
 	}
 }
 
