@@ -55,12 +55,17 @@ func main() {
 
 	var wg sync.WaitGroup // Import "sync" package to use WaitGroup.
 
+	// Message queue
+	storageRequestsChannel := make(chan datastructures.StorageRequestQueueMessage)
+	newFilesChannel := make(chan datastructures.StorageRequest)
+	testRequestsChannel := make(chan datastructures.TestRequestQueueMessage)
+
 	wg.Add(1)
 	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 	go func() {
 		// PEER LISTENER - to receive messages from other peers
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter)
+		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter, storageRequestsChannel, testRequestsChannel)
 	}()
 
 	wg.Add(1)
@@ -74,7 +79,7 @@ func main() {
 	go func() {
 		// FSWATCHER - to upload data on network
 		defer wg.Done()
-		fswatcher.FsWatcher("./data", scores, config.DataCopies, port, bytesAtPeers, &fulfilled_requests, config.StoragerequestsScoreDecreaseRefusedStoReq)
+		fswatcher.FsWatcher("./data", scores, config.DataCopies, port, bytesAtPeers, &fulfilled_requests, config.StoragerequestsScoreDecreaseRefusedStoReq, newFilesChannel)
 	}()
 
 	// TODO : BARTERER, FAILURESIM, DATASIM

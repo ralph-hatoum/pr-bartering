@@ -49,13 +49,18 @@ func main() {
 
 	var failureMutex sync.Mutex
 
+	// Message queue
+	storageRequestsChannel := make(chan datastructures.StorageRequestQueueMessage)
+	// newFilesChannel := make(chan datastructures.StorageRequest)
+	testRequestsChannel := make(chan datastructures.TestRequestQueueMessage)
+
 	go failuresimulation.Failure(config, 2.0, 100, &failureMutex)
 
 	wg.Add(1)
 	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCPFailure(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &failureMutex, &msgCounter)
+		peersconnect.ListenPeersRequestsTCPFailure(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &failureMutex, &msgCounter, storageRequestsChannel, testRequestsChannel)
 	}()
 
 	// to_request, err := storagerequests.ElectStorageNodes(scores, 3)

@@ -3,7 +3,6 @@ package storagetesting
 import (
 	api_ipfs "bartering/api-ipfs"
 	datastructures "bartering/data-structures"
-	storagerequests "bartering/storage-requests"
 	"bartering/utils"
 	"context"
 	"crypto/sha256"
@@ -34,9 +33,10 @@ func PeriodicTests(fulfilledRequests *[]datastructures.FulfilledRequest, scores 
 			if !testResult {
 				// Could not confirm storage ; need to request storage from other node
 				fmt.Println("requesting storage from other node ... ")
-				stoReq := datastructures.StorageRequest{CID: fulfilledRequest.CID, FileSize: fulfilledRequest.FileSize}
-				peersToRq := storagerequests.RemovePeerFromPeers(scores, fulfilledRequest.Peer)
-				storagerequests.StoreKCopiesOnNetwork(peersToRq, 1, stoReq, port, bytesAtPeers, fulfilledRequests, scoreDecreaseRefStoReq)
+				// stoReq := datastructures.StorageRequest{CID: fulfilledRequest.CID, FileSize: fulfilledRequest.FileSize}
+				// peersToRq := storagerequests.RemovePeerFromPeers(scores, fulfilledRequest.Peer)
+				// storagerequests.StoreKCopiesOnNetwork(peersToRq, 1, stoReq, port, bytesAtPeers, fulfilledRequests, scoreDecreaseRefStoReq)
+				// Todo : review this logic. SHould jsut be send a msg to channel + slash peer score
 			}
 		}
 	}
@@ -63,17 +63,23 @@ func RequestTest(CID string, filesAtPeers []datastructures.FilesAtPeers, scores 
 
 }
 
-func HandleTest(CID string, conn net.Conn) {
+func HandleTest(testRequestsChannel chan datastructures.TestRequestQueueMessage) {
 
 	/*
 		Function to perform tests upon recieving a test request
 		Arguments : CID as a string, connection as net.Conn
 	*/
 
-	answer := computeExpectedAnswer(CID)
-	fmt.Println("Proof computed : ", answer)
-	buffer := []byte(answer)
-	conn.Write(buffer) // INCREASE NBMSG COUNTER
+	for request := range testRequestsChannel {
+		CID := request.CID
+		conn := request.Conn
+
+		answer := computeExpectedAnswer(CID)
+		fmt.Println("Proof computed : ", answer)
+		buffer := []byte(answer)
+		conn.Write(buffer) // INCREASE NBMSG COUNTER
+
+	}
 
 }
 

@@ -55,9 +55,13 @@ func main() {
 
 	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 
+	// Message queue
+	storageRequestsChannel := make(chan datastructures.StorageRequestQueueMessage)
+	testRequestsChannel := make(chan datastructures.TestRequestQueueMessage)
+
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter)
+		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter, storageRequestsChannel, testRequestsChannel)
 	}()
 
 	storage_request := datastructures.StorageRequest{CID: "QmV9tSDx9UiPeWExXEeH6aoDvmihvx6jD5eLb4jbTaKGps", FileSize: 5.5}

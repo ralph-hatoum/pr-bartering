@@ -10,6 +10,7 @@ import (
 	fswatcher "bartering/fs-watcher"
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
+	storagerequests "bartering/storage-requests"
 	storagetesting "bartering/storage-testing"
 )
 
@@ -28,7 +29,7 @@ func main() {
 
 	config := configextractor.ConfigExtractor("config.yaml")
 
-	port := fmt.Sprint(config.Port)
+	port := "8081"
 	NodeStorage := config.TotalStorage
 
 	configextractor.ConfigPrinter(config)
@@ -51,12 +52,24 @@ func main() {
 
 	var wg sync.WaitGroup
 
+	// Message queues
+	storageRequestsChannel := make(chan datastructures.StorageRequestQueueMessage)
+	newFilesChannel := make(chan datastructures.StorageRequest)
+	testRequestsChannel := make(chan datastructures.TestRequestQueueMessage)
+
 	wg.Add(1)
 	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 	go func() {
 		// PEER LISTENER - to receive messages from other peers
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter)
+		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter, storageRequestsChannel, testRequestsChannel)
+	}()
+
+	wg.Add(1)
+	go func() {
+		// Handle storage requests pool
+		defer wg.Done()
+		storagerequests.HandleStorageRequest(bytesForPeers, &storedForPeers, storageRequestsChannel)
 	}()
 
 	wg.Add(1)
@@ -65,12 +78,26 @@ func main() {
 		defer wg.Done()
 		storagetesting.PeriodicTests(&fulfilled_requests, scores, config.StoragetestingTimerTimeoutSec, port, config.StoragetestingTestingPeriod, DecreaseBehavior, IncreaseBehavior, bytesAtPeers, config.StoragerequestsScoreDecreaseRefusedStoReq)
 	}()
-	fmt.Println("Main; peers :", scores)
+
+	wg.Add(1)
+	go func() {
+		// Handle new files pool
+		defer wg.Done()
+		storagerequests.StoreKCopiesOnNetwork(scores, 2, port, bytesAtPeers, &fulfilled_requests, config.StoragerequestsScoreDecreaseRefusedStoReq, newFilesChannel)
+	}()
+
 	wg.Add(1)
 	go func() {
 		// FSWATCHER - to upload data on network
 		defer wg.Done()
-		fswatcher.FsWatcher("./data", scores, config.DataCopies, port, bytesAtPeers, &fulfilled_requests, config.StoragerequestsScoreDecreaseRefusedStoReq)
+		fswatcher.FsWatcher("./data", scores, config.DataCopies, port, bytesAtPeers, &fulfilled_requests, config.StoragerequestsScoreDecreaseRefusedStoReq, newFilesChannel)
+	}()
+
+	wg.Add(1)
+	go func() {
+		// Test Handler pool
+		defer wg.Done()
+		storagetesting.HandleTest(testRequestsChannel)
 	}()
 
 	fmt.Println("Node started ! Listening on port ", port)

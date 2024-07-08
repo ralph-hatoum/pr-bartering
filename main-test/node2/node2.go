@@ -46,11 +46,15 @@ func main() {
 
 	var wg sync.WaitGroup // Import "sync" package to use WaitGroup.
 
+	// Message queue
+	storageRequestsChannel := make(chan datastructures.StorageRequestQueueMessage)
+	testRequestChannel := make(chan datastructures.TestRequestQueueMessage)
+
 	wg.Add(1)
 	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter)
+		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter, storageRequestsChannel, testRequestChannel)
 	}()
 
 	// Wait for the goroutine to finish.
