@@ -14,39 +14,37 @@ import (
 	"time"
 )
 
-func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, K int, storageRequest datastructures.StorageRequest, port string, bytesAtPeers []datastructures.PeerStorageUse, fulfilledRequests *[]datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64) int {
+func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, K int, port string, bytesAtPeers []datastructures.PeerStorageUse, fulfilledRequests *[]datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64, newFileChannel chan datastructures.StorageRequest) {
 	okRqs := 0
 	ans := ""
 	tries := 0
 
-	for tries < 3 {
-		peersToRequest, err := ElectStorageNodes(peerScores, K)
-		if err != nil {
-			fmt.Println(err)
-			return 0
-		}
+	for request := range newFileChannel {
 
-		for _, peer := range peersToRequest {
-			ans = RequestStorageFromPeer(peer, storageRequest, port, bytesAtPeers, peerScores, fulfilledRequests, scoreDecreaseRefStoReq)
-			if ans == "OK\n" {
-				okRqs += 1
-				peerScores = RemovePeerFromPeers(peerScores, peer)
-			} else if ans == "ERR" {
-				fmt.Println("Skipping as connection refused by peer ", peer)
+		for tries < 3 {
+			peersToRequest, err := ElectStorageNodes(peerScores, K)
+			if err != nil {
+				fmt.Println(err)
 			}
-			if okRqs == K {
-				fmt.Println("Reached required number of copies")
-				return okRqs
+
+			for _, peer := range peersToRequest {
+				ans = RequestStorageFromPeer(peer, request, port, bytesAtPeers, peerScores, fulfilledRequests, scoreDecreaseRefStoReq)
+				if ans == "OK\n" {
+					okRqs += 1
+					peerScores = RemovePeerFromPeers(peerScores, peer)
+				} else if ans == "ERR" {
+					fmt.Println("Skipping as connection refused by peer ", peer)
+				}
+				if okRqs == K {
+					fmt.Println("Reached required number of copies")
+				}
 			}
+			fmt.Println("Could not reach number of copies ... choosing new nodes")
+			tries += 1
 		}
-		fmt.Println("Could not reach number of copies ... choosing new nodes")
-		tries += 1
+		newFileChannel <- request
+		fmt.Println("Could not reach desired number of copies -  only got ", okRqs)
 	}
-
-	fmt.Println("Could not reach desired number of copies -  only got ", okRqs)
-
-	return okRqs
-
 }
 
 func RemovePeerFromPeers(peerScores []datastructures.NodeScore, peerToRm string) []datastructures.NodeScore {
@@ -193,52 +191,42 @@ func updateBytesForPeers(bytesForPeers []datastructures.PeerStorageUse, peer str
 	}
 }
 
-func HandleStorageRequest(bufferString string, conn net.Conn, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest) {
+func HandleStorageRequest(bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest, storageRequestsChannel chan datastructures.StorageRequestQueueMessage) {
 
 	/*
 		Function to handle a storage message type message
 		Arguments : buffer received through a tcp connection, as a string, net.Conn object, PeerStorageUse array, pointer to fulfilledRequest array
 	*/
-
-	peer := conn.RemoteAddr().(*net.TCPAddr).IP.String()
 	var messageToPeer string
-	fmt.Println("Received storage request")
-	CID := bufferString[5:51]
-	fmt.Println("CID : ", CID)
-	fileSize := bufferString[51:]
-	fileSize = strings.Split(fileSize, "\n")[0]
-	fmt.Println("File Size : ", fileSize)
 
-	fileSizeFloat, err := strconv.ParseFloat(fileSize, 64)
-	utils.ErrorHandler(err)
+	for requestMessage := range storageRequestsChannel {
+		request, conn := requestMessage.StorageRequest, requestMessage.Conn
+		peer := conn.RemoteAddr().String()
 
-	request := datastructures.StorageRequest{FileSize: fileSizeFloat, CID: CID}
+		fmt.Println("Storage request : ", request, " ; checking validity ...")
 
-	fmt.Println("Storage request : ", request, " ; checking validity ...")
+		if CheckRqValidity(request) {
+			fmt.Println("Request ", request, " valid, storing ! ")
+			fmt.Println("Pinning to IPFS ...")
+			_, err := api_ipfs.PinToIPFS(request.CID)
+			if err == nil {
+				fmt.Println("File pinned to IPFS!")
+				messageToPeer = "OK\n"
+				updateBytesForPeers(bytesForPeers, peer, request.FileSize)
+				updateFulfilledRequests(request.CID, peer, storedForPeers)
+				fmt.Println("stored for peers : ", storedForPeers)
+			} else {
+				fmt.Println("could not pin to ipfs - is ipfs running ?")
+			}
 
-	if CheckRqValidity(request) {
-		fmt.Println("Request ", request, " valid, storing ! ")
-		fmt.Println("Pinning to IPFS ...")
-		_, err := api_ipfs.PinToIPFS(CID)
-		if err == nil {
-			fmt.Println("File pinned to IPFS!")
-			messageToPeer = "OK\n"
-			updateBytesForPeers(bytesForPeers, peer, fileSizeFloat)
-			updateFulfilledRequests(CID, peer, storedForPeers)
-			fmt.Println("stored for peers : ", storedForPeers)
 		} else {
-			fmt.Println("could not pin to ipfs - is ipfs running ?")
+			fmt.Println("Request ", request, " not valid, not storing ! ")
+
+			messageToPeer = "KO\n"
 		}
 
-	} else {
-		fmt.Println("Request ", request, " not valid, not storing ! ")
-
-		messageToPeer = "KO\n"
+		_, _ = io.WriteString(conn, messageToPeer)
 	}
-
-	_, err = io.WriteString(conn, messageToPeer)
-
-	utils.ErrorHandler(err)
 
 }
 

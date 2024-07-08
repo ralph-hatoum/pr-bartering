@@ -5,7 +5,7 @@ import (
 	datastructures "bartering/data-structures"
 
 	// "bartering/functions"
-	storagerequests "bartering/storage-requests"
+
 	"fmt"
 	"log"
 
@@ -19,7 +19,7 @@ func getFileSize(path string) int64 {
 	return fileInfo.Size()
 }
 
-func FsWatcher(path string, peerScores []datastructures.NodeScore, K int, port string, bytesAtPeers []datastructures.PeerStorageUse, fulfilledRequests *[]datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64) {
+func FsWatcher(path string, peerScores []datastructures.NodeScore, K int, port string, bytesAtPeers []datastructures.PeerStorageUse, fulfilledRequests *[]datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64, newFileChannel chan datastructures.StorageRequest) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
@@ -46,7 +46,8 @@ func FsWatcher(path string, peerScores []datastructures.NodeScore, K int, port s
 					} else {
 						fmt.Println("File uploaded ", filePath, " uploaded to IPFS ; requesting storage from peer now")
 						storageRequest := datastructures.StorageRequest{CID: CID, FileSize: float64(getFileSize(filePath))}
-						go storagerequests.StoreKCopiesOnNetwork(peerScores, K, storageRequest, port, bytesAtPeers, fulfilledRequests, scoreDecreaseRefStoReq)
+						// go storagerequests.StoreKCopiesOnNetwork(peerScores, K, storageRequest, port, bytesAtPeers, fulfilledRequests, scoreDecreaseRefStoReq)
+						newFileChannel <- storageRequest
 					}
 				}
 				if event.Op&fsnotify.Write == fsnotify.Write {

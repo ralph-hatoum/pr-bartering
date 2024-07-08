@@ -1,6 +1,9 @@
 package datastructures
 
-import "time"
+import (
+	"net"
+	"time"
+)
 
 type NodeScore struct {
 	NodeIP string
@@ -46,4 +49,14 @@ type FilesAtPeers struct {
 type ScoreVariationScenario struct {
 	Scenario  string
 	Variation float64
+}
+
+type StorageRequestQueueMessage struct {
+	StorageRequest StorageRequest
+	Conn           net.Conn
+}
+
+type TestRequestQueueMessage struct {
+	CID  string
+	Conn net.Conn
 }
