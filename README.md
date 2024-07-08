@@ -1,5 +1,7 @@
 # Bartering protocol
 
+V2 - redoing implementation to increase robustness
+
 Ralph HATOUM - PR INSA Lyon 2023-2024
 
 Projet still under development
