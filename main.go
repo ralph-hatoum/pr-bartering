@@ -29,7 +29,7 @@ func main() {
 
 	config := configextractor.ConfigExtractor("config.yaml")
 
-	port := "8081"
+	port := fmt.Sprint(config.Port)
 	NodeStorage := config.TotalStorage
 
 	configextractor.ConfigPrinter(config)
