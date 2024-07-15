@@ -80,8 +80,8 @@ func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, byt
 		fmt.Println("Received storage request")
 		// storagerequests.HandleStorageRequest(bufferString, conn, bytesForPeers, storedForPeers)
 		storageRequest, err := buildStorageRequest(bufferString)
-		queueMessage := datastructures.StorageRequestQueueMessage{StorageRequest: storageRequest, Conn: conn}
 		if err == nil {
+			queueMessage := datastructures.StorageRequestQueueMessage{StorageRequest: storageRequest, Conn: conn}
 			storageRequestsChannel <- queueMessage
 		}
 	} else if messageType == "BarRq" {
