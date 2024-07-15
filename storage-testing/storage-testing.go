@@ -3,7 +3,6 @@ package storagetesting
 import (
 	api_ipfs "bartering/api-ipfs"
 	datastructures "bartering/data-structures"
-	"bartering/utils"
 	"context"
 	"crypto/sha256"
 	"errors"
@@ -241,7 +240,9 @@ func decreaseScore(peer string, scenario string, scores []datastructures.NodeSco
 	*/
 
 	decreaseAmount, err := findScoreVariation(DecreasingBehavior, scenario)
-	utils.ErrorHandler(err)
+	if err != nil {
+		return
+	}
 
 	for _, peerScore := range scores {
 		if peerScore.NodeIP == peer {
@@ -259,7 +260,9 @@ func increaseScore(peer string, scenario string, scores []datastructures.NodeSco
 	*/
 
 	increaseAmount, err := findScoreVariation(IncreasingBehavior, scenario)
-	utils.ErrorHandler(err)
+	if err != nil {
+		return
+	}
 
 	for index, peerScore := range scores {
 		if peerScore.NodeIP == peer {

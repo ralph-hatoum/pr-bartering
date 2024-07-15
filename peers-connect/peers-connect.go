@@ -87,9 +87,10 @@ func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, byt
 	} else if messageType == "BarRq" {
 		remoteAddr := conn.RemoteAddr()
 		ip, _, err := net.SplitHostPort(remoteAddr.String())
-		utils.ErrorHandler(err)
-		fmt.Println("Received bartering request from peer", ip)
-		bartering.RespondToBarterMsg(bufferString, ip, nodeStorage, bytesAtPeers, scores, conn, ratios, factorAcceptableRatio, msgCounter)
+		if err != nil {
+			fmt.Println("Received bartering request from peer", ip)
+			bartering.RespondToBarterMsg(bufferString, ip, nodeStorage, bytesAtPeers, scores, conn, ratios, factorAcceptableRatio, msgCounter)
+		}
 	} else if messageType == "TesRq" {
 		CID := bufferString[5 : len(bufferString)-1]
 		fmt.Println("Recieved test request for file ", CID)
