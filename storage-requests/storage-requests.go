@@ -132,12 +132,14 @@ func RequestStorageFromPeer(peer string, storageRequest datastructures.StorageRe
 	conn, err := net.Dial("tcp", peer+":"+port)
 
 	if err != nil {
+		updatePeerScoreRefusedRq(scores, peer, scoreDecreaseRefStoReq)
 		return "ERR"
 	}
 
 	_, err = io.WriteString(conn, storageRqMessage)
 
 	if err != nil {
+		updatePeerScoreRefusedRq(scores, peer, scoreDecreaseRefStoReq)
 		return "ERR"
 	}
 
@@ -146,6 +148,7 @@ func RequestStorageFromPeer(peer string, storageRequest datastructures.StorageRe
 	responseString, err := response.ReadString('\n')
 
 	if err != nil {
+		updatePeerScoreRefusedRq(scores, peer, scoreDecreaseRefStoReq)
 		return "ERR"
 	}
 
