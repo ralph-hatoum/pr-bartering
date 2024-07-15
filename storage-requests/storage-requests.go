@@ -135,13 +135,17 @@ func RequestStorageFromPeer(peer string, storageRequest datastructures.StorageRe
 
 	_, err = io.WriteString(conn, storageRqMessage)
 
-	utils.ErrorHandler(err)
+	if err != nil {
+		return "ERR"
+	}
 
 	response := bufio.NewReader(conn)
 
 	responseString, err := response.ReadString('\n')
 
-	utils.ErrorHandler(err)
+	if err != nil {
+		return "ERR"
+	}
 
 	if responseString == "OK\n" {
 		fmt.Println("Peer ", peer, " stored file with CID ", storageRequest.CID, " successfully.")
