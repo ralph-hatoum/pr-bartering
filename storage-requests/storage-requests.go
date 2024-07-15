@@ -34,6 +34,8 @@ func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, K int, port st
 						peerScores = RemovePeerFromPeers(peerScores, peer)
 					} else if ans == "ERR" {
 						fmt.Println("Skipping as connection refused by peer ", peer)
+					} else if ans == "KO\n" {
+						fmt.Println("storage refused by peer : ", peer)
 					}
 					if okRqs == K {
 						fmt.Println("Reached required number of copies")
