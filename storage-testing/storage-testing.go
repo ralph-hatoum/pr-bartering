@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func PeriodicTests(fulfilledRequests *[]datastructures.FulfilledRequest, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, testingPeriod float64, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario, bytesAtPeers []datastructures.PeerStorageUse, scoreDecreaseRefStoReq float64) {
+func PeriodicTests(fulfilledRequests *[]datastructures.FulfilledRequest, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, testingPeriod float64, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario, bytesAtPeers []datastructures.PeerStorageUse, scoreDecreaseRefStoReq float64, newFileChannel chan datastructures.StorageRequest) {
 
 	/*
 		Function to requests tests periodically from peers storing our data
@@ -33,10 +33,8 @@ func PeriodicTests(fulfilledRequests *[]datastructures.FulfilledRequest, scores 
 			if !testResult {
 				// Could not confirm storage ; need to request storage from other node
 				fmt.Println("requesting storage from other node ... ")
-				// stoReq := datastructures.StorageRequest{CID: fulfilledRequest.CID, FileSize: fulfilledRequest.FileSize}
-				// peersToRq := storagerequests.RemovePeerFromPeers(scores, fulfilledRequest.Peer)
-				// storagerequests.StoreKCopiesOnNetwork(peersToRq, 1, stoReq, port, bytesAtPeers, fulfilledRequests, scoreDecreaseRefStoReq)
-				// Todo : review this logic. SHould jsut be send a msg to channel + slash peer score
+				stoReq := datastructures.StorageRequest{CID: fulfilledRequest.CID, FileSize: fulfilledRequest.FileSize}
+				newFileChannel <- stoReq
 			}
 		}
 	}
