@@ -25,22 +25,30 @@ func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, K int, port st
 			peersToRequest, err := ElectStorageNodes(peerScores, K)
 			if err != nil {
 				fmt.Println(err)
-			}
+			} else {
 
-			for _, peer := range peersToRequest {
-				ans = RequestStorageFromPeer(peer, request, port, bytesAtPeers, peerScores, fulfilledRequests, scoreDecreaseRefStoReq)
-				if ans == "OK\n" {
-					okRqs += 1
-					peerScores = RemovePeerFromPeers(peerScores, peer)
-				} else if ans == "ERR" {
-					fmt.Println("Skipping as connection refused by peer ", peer)
-				}
-				if okRqs == K {
-					fmt.Println("Reached required number of copies")
+				for _, peer := range peersToRequest {
+					ans = RequestStorageFromPeer(peer, request, port, bytesAtPeers, peerScores, fulfilledRequests, scoreDecreaseRefStoReq)
+					if ans == "OK\n" {
+						okRqs += 1
+						peerScores = RemovePeerFromPeers(peerScores, peer)
+					} else if ans == "ERR" {
+						fmt.Println("Skipping as connection refused by peer ", peer)
+					} else if ans == "KO\n" {
+						fmt.Println("storage refused by peer : ", peer)
+					}
+					if okRqs == K {
+						fmt.Println("Reached required number of copies")
+						return
+					}
 				}
 			}
-			fmt.Println("Could not reach number of copies ... choosing new nodes")
-			tries += 1
+			if okRqs != K {
+				fmt.Println("Could not reach number of copies ... choosing new nodes")
+				tries += 1
+			} else {
+				return
+			}
 		}
 		newFileChannel <- request
 		fmt.Println("Could not reach desired number of copies -  only got ", okRqs)
@@ -124,18 +132,25 @@ func RequestStorageFromPeer(peer string, storageRequest datastructures.StorageRe
 	conn, err := net.Dial("tcp", peer+":"+port)
 
 	if err != nil {
+		updatePeerScoreRefusedRq(scores, peer, scoreDecreaseRefStoReq)
 		return "ERR"
 	}
 
 	_, err = io.WriteString(conn, storageRqMessage)
 
-	utils.ErrorHandler(err)
+	if err != nil {
+		updatePeerScoreRefusedRq(scores, peer, scoreDecreaseRefStoReq)
+		return "ERR"
+	}
 
 	response := bufio.NewReader(conn)
 
 	responseString, err := response.ReadString('\n')
 
-	utils.ErrorHandler(err)
+	if err != nil {
+		updatePeerScoreRefusedRq(scores, peer, scoreDecreaseRefStoReq)
+		return "ERR"
+	}
 
 	if responseString == "OK\n" {
 		fmt.Println("Peer ", peer, " stored file with CID ", storageRequest.CID, " successfully.")
@@ -216,6 +231,7 @@ func HandleStorageRequest(bytesForPeers []datastructures.PeerStorageUse, storedF
 				updateFulfilledRequests(request.CID, peer, storedForPeers)
 				fmt.Println("stored for peers : ", storedForPeers)
 			} else {
+				messageToPeer = "KO\n"
 				fmt.Println("could not pin to ipfs - is ipfs running ?")
 			}
 
