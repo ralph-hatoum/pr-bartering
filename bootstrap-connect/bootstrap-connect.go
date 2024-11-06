@@ -10,8 +10,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math"
 	"net"
 	"net/http"
+	"time"
 
 	"bartering/utils"
 )
@@ -53,8 +55,19 @@ func GetPeersFromBootstrapHTTP(IP string, port string) []string {
 
 	bootstrapUrl := IP + ":" + port
 
+	attempts := 1
+
 	bootstrapResponse, err := http.Get("http://" + bootstrapUrl)
-	utils.ErrorHandler(err)
+	for err != nil && attempts <= 10 {
+		fmt.Printf("Could not reach bootstrap, retrying (attempt %d)\n", attempts)
+		timeToWait := math.Pow(2.0, float64(attempts))
+		time.Sleep(time.Duration(timeToWait) * time.Second)
+		bootstrapResponse, err = http.Get("http://" + bootstrapUrl)
+		attempts += 1
+		if attempts == 10 {
+			panic(-1)
+		}
+	}
 
 	defer bootstrapResponse.Body.Close()
 
