@@ -6,8 +6,10 @@ Functions to interact with the IPFS Daemon
 
 import (
 	"fmt"
+	"math"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 func UploadToIPFS(path string) (string, error) {
@@ -20,12 +22,7 @@ func UploadToIPFS(path string) (string, error) {
 	cmd := "ipfs"
 	cmdArgs := []string{"add", path}
 
-	cmdOutput, err := exec.Command(cmd, cmdArgs...).Output()
-
-	if err != nil {
-		fmt.Println("ERROR : could not upload to IPFS")
-		return "", fmt.Errorf("could not upload to IPFS")
-	}
+	cmdOutput := execIpfsCommandWithRetry(cmd, cmdArgs)
 
 	CID := strings.Split(string(cmdOutput), " ")[1]
 
@@ -46,12 +43,7 @@ func PinToIPFS(cid string) (string, error) {
 	cmd := "ipfs"
 	cmdArgs := []string{"pin", "add", cid}
 
-	cmdOutput, err := exec.Command(cmd, cmdArgs...).Output()
-
-	if err != nil {
-		fmt.Println("ERROR : could not pin to IPFS")
-		return "", fmt.Errorf("could not pin to IPFS")
-	}
+	cmdOutput := execIpfsCommandWithRetry(cmd, cmdArgs)
 
 	return string(cmdOutput), nil
 
@@ -67,12 +59,7 @@ func UnpinIPFS(cid string) (string, error) {
 	cmd := "ipfs"
 	cmdArgs := []string{"pin", "rm", cid}
 
-	cmdOutput, err := exec.Command(cmd, cmdArgs...).Output()
-
-	if err != nil {
-		fmt.Println("ERROR : could not unpin to IPFS")
-		return "", fmt.Errorf("could not unpin to IPFS")
-	}
+	cmdOutput := execIpfsCommandWithRetry(cmd, cmdArgs)
 
 	return string(cmdOutput), nil
 }
@@ -87,12 +74,19 @@ func CatIPFS(cid string) (string, error) {
 	cmd := "/usr/local/bin/ipfs"
 	cmdArgs := []string{"cat", "--timeout=30s", cid}
 
-	cmdOutput, err := exec.Command(cmd, cmdArgs...).Output()
-
-	if err != nil {
-		fmt.Println("ERROR : could not cat to IPFS")
-		return "", fmt.Errorf("could not cat to IPFS")
-	}
+	cmdOutput := execIpfsCommandWithRetry(cmd, cmdArgs)
 
 	return string(cmdOutput), nil
+}
+
+func execIpfsCommandWithRetry(cmd string, cmdArgs []string) []byte {
+	attempts := 0
+	cmdOutput, err := exec.Command(cmd, cmdArgs...).Output()
+	for err != nil {
+		time.Sleep(time.Duration(math.Pow(2, float64(attempts))) * time.Second)
+		fmt.Printf("Could not run IPFS command, retrying ...\n")
+		cmdOutput, err = exec.Command(cmd, cmdArgs...).Output()
+	}
+
+	return cmdOutput
 }
