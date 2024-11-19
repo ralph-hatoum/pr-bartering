@@ -1,20 +1,24 @@
 package dumper
 
 import (
-	datastructures "bartering/data-structures"
 	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
-func Dumper(bytesAtPeers []datastructures.PeerStorageUse, bytesForPeers []datastructures.PeerStorageUse, fulfilledRequests []datastructures.FulfilledRequest, storagePool []string, pendingRequests []datastructures.StorageRequest, peers []string, scores []datastructures.NodeScore, ratiosForPeers []datastructures.NodeRatio, ratiosAtPeers []datastructures.NodeRatio, storedForPeers []datastructures.FulfilledRequest) {
+type Datastructure struct {
+	Name  string
+	Value any
+}
+
+func Dumper(datastructures []Datastructure) {
 	address := "0.0.0.0"
 	port := "8083"
 
 	serverAddr := address + ":" + port
 
 	http.HandleFunc("/dump", func(w http.ResponseWriter, r *http.Request) {
-		response, err := responseBuilder(bytesAtPeers, bytesForPeers, fulfilledRequests, storagePool, pendingRequests, peers, scores, ratiosForPeers, ratiosAtPeers, storedForPeers)
+		response, err := responseBuilder(datastructures)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
@@ -31,18 +35,12 @@ func Dumper(bytesAtPeers []datastructures.PeerStorageUse, bytesForPeers []datast
 	}
 }
 
-func responseBuilder(bytesAtPeers []datastructures.PeerStorageUse, bytesForPeers []datastructures.PeerStorageUse, fulfilledRequests []datastructures.FulfilledRequest, storagePool []string, pendingRequests []datastructures.StorageRequest, peers []string, scores []datastructures.NodeScore, ratiosForPeers []datastructures.NodeRatio, ratiosAtPeers []datastructures.NodeRatio, storedForPeers []datastructures.FulfilledRequest) ([]byte, error) {
+func responseBuilder(datastructures []Datastructure) ([]byte, error) {
 	output := make(map[string]any)
 
-	output["bytesAtPeers"] = bytesAtPeers
-	output["bytesForPeers"] = bytesForPeers
-	output["fulfilledRequests"] = fulfilledRequests
-	output["storagePool"] = storagePool
-	output["pendingRequests"] = pendingRequests
-	output["peers"] = peers
-	output["scores"] = scores
-	output["ratiosAtPeers"] = ratiosAtPeers
-	output["ratiosForPeers"] = ratiosForPeers
+	for _, datastructure := range datastructures {
+		output[datastructure.Name] = datastructure.Value
+	}
 
 	jsonResponse, err := json.Marshal(output)
 

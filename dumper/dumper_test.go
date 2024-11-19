@@ -21,7 +21,20 @@ func init() {
 	ratiosAtPeers := []datastructures.NodeRatio{{NodeIP: "testIP", Ratio: 2.0}}
 	storedForPeers := []datastructures.FulfilledRequest{{CID: "TestCID", Peer: "peer2", FileSize: 10.0}, {CID: "TestCID2", Peer: "peer3", FileSize: 13.0}}
 
-	go Dumper(bytesAtPeers, bytesForPeers, fulfilledRequests, storagePool, pendingRequests, peers, scores, ratiosForPeers, ratiosAtPeers, storedForPeers)
+	datastructures := []Datastructure{
+		{"bytesAtPeers", bytesAtPeers},
+		{"bytesForPeers", bytesForPeers},
+		{"fulfilledRequests", fulfilledRequests},
+		{"storagePool", storagePool},
+		{"pendingRequests", pendingRequests},
+		{"peers", peers},
+		{"scores", scores},
+		{"ratiosForPeers", ratiosForPeers},
+		{"ratiosAtPeers", ratiosAtPeers},
+		{"storedForPeers", storedForPeers},
+	}
+
+	go Dumper(datastructures)
 }
 
 func Test_Dumper(t *testing.T) {
