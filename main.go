@@ -7,6 +7,7 @@ import (
 
 	configextractor "bartering/config-extractor"
 	datastructures "bartering/data-structures"
+	"bartering/dumper"
 	fswatcher "bartering/fs-watcher"
 	"bartering/functions"
 	peersconnect "bartering/peers-connect"
@@ -56,6 +57,25 @@ func main() {
 	storageRequestsChannel := make(chan datastructures.StorageRequestQueueMessage)
 	newFilesChannel := make(chan datastructures.StorageRequest)
 	testRequestsChannel := make(chan datastructures.TestRequestQueueMessage)
+
+	wg.Add(1)
+	go func() {
+		// DUMPER - to have access to the state of all data structures (for testing purposes)
+		defer wg.Done()
+		datastructures := []dumper.Datastructure{
+			{Name: "bytesAtPeers", Value: bytesAtPeers},
+			{Name: "bytesForPeers", Value: bytesForPeers},
+			{Name: "fulfilledRequests", Value: fulfilled_requests},
+			{Name: "storagePool", Value: storage_pool},
+			{Name: "pendingRequests", Value: pending_requests},
+			{Name: "peers", Value: peers},
+			{Name: "scores", Value: scores},
+			{Name: "ratiosForPeers", Value: ratiosForPeers},
+			{Name: "ratiosAtPeers", Value: ratiosAtPeers},
+			{Name: "storedForPeers", Value: storedForPeers},
+		}
+		dumper.Dumper(datastructures)
+	}()
 
 	wg.Add(1)
 	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
