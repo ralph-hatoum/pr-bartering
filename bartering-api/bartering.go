@@ -10,7 +10,6 @@ import (
 
 	// "bartering/functions"
 	datastructures "bartering/data-structures"
-	"bartering/utils"
 )
 
 func InitiateBarter(peer string, ratios []datastructures.NodeRatio, ratioIncreaseRate float64, port string) error {
@@ -59,7 +58,10 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 	barterMsg_ratioRq := barterMsg[5:8]
 	fmt.Println("Ratio received : ", barterMsg_ratioRq)
 	barterMsg_ratio, err := strconv.ParseFloat(barterMsg_ratioRq, 64)
-	utils.ErrorHandler(err)
+	if err != nil {
+		fmt.Println("could not parse ratio into float")
+		return
+	}
 
 	if shouldRatioBeAccepted(barterMsg_ratio, peer, storageSpace, bytesAtPeers, scores, factorAcceptableRatio) {
 		fmt.Println("New ratio is accepted -- sending OK to other peer")
@@ -79,7 +81,10 @@ func RespondToBarterMsg(barterMsg string, peer string, storageSpace float64, byt
 		fmt.Println("New ratio :", newRatio)
 		toSend := fmt.Sprintf("%f\n", newRatio)
 		_, err = io.WriteString(conn, toSend)
-		utils.ErrorHandler(err)
+		if err != nil {
+			fmt.Println("could not write new ratio to connection")
+			return
+		}
 		updatePeerRatio(ratios, peer, 1/newRatio)
 	}
 
@@ -150,7 +155,9 @@ func shouldRatioBeAccepted(ratio float64, peer string, storageSpace float64, byt
 	*/
 
 	currentStorage, err := findPeerStorageUse(peer, bytesAtPeers)
-	utils.ErrorHandler(err)
+	if err != nil {
+		currentStorage = datastructures.PeerStorageUse{StorageAtNode: 0.0}
+	}
 	if currentStorage.StorageAtNode == 0.0 {
 		return true
 	}
@@ -180,7 +187,9 @@ func isRatioTolerableGivenStorageSpace(peer string, ratio float64, storageSpace 
 
 	peerStorageUse, err := findPeerStorageUse(peer, bytesAtPeers)
 
-	utils.ErrorHandler(err)
+	if err != nil {
+		peerStorageUse = datastructures.PeerStorageUse{StorageAtNode: 0.0}
+	}
 
 	return peerStorageUse.StorageAtNode*ratio < storageSpace
 }
@@ -211,13 +220,17 @@ func calculateMaxAcceptableRatio(peer string, scores []datastructures.NodeScore,
 	*/
 
 	peerScore, err := findPeerScore(peer, scores)
-	utils.ErrorHandler(err)
+	if err != nil {
+		peerScore = datastructures.NodeScore{Score: 0.0}
+	}
 
 	ratio := factorAcceptableRatio * peerScore.Score
 
 	if !isRatioTolerableGivenStorageSpace(peer, ratio, storageSpace, bytesAtPeers) {
 		storageUsed, err := findPeerStorageUse(peer, bytesAtPeers)
-		utils.ErrorHandler(err)
+		if err != nil {
+			storageUsed = datastructures.PeerStorageUse{StorageAtNode: 0.0}
+		}
 		ratio = storageSpace / storageUsed.StorageAtNode
 	}
 
@@ -249,16 +262,25 @@ func contactNodeForBarter(peer string, msg string, port string) string {
 	*/
 
 	conn, err := net.Dial("tcp", peer+":"+port)
-	utils.ErrorHandler(err)
+	if err != nil {
+		fmt.Println("could not connect to peer")
+		return ""
+	}
 
 	defer conn.Close()
 
 	_, err = io.WriteString(conn, msg)
 
-	utils.ErrorHandler(err)
+	if err != nil {
+		fmt.Println("could not write to connection")
+		return ""
+	}
 	response := bufio.NewReader(conn)
 	responseString, err := response.ReadString('\n')
-	utils.ErrorHandler(err)
+	if err != nil {
+		fmt.Println("could not parse peer response")
+		return ""
+	}
 
 	return responseString
 }
