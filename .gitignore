@@ -1,3 +1,4 @@
 /docker_test_bench
 /measurements
-.DS_Store
+./DS_Store
+/binaries
