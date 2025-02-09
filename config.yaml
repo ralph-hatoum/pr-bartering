@@ -6,6 +6,7 @@ BarteringInitialScore: 10.0
 BarteringFactorAcceptableRatio: 0.3
 BarteringRatioIncreaseRate: 0.1
 
+BootstrapIp: "127.0.0.1"
 
 StoragerequestsScoreDecreaseRefusedStoReq: 0.8
 

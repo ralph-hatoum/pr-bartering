@@ -13,7 +13,7 @@ import (
 */
 
 type Config struct {
-	Port                                      int     `yaml:"Port"`
+	Port                                      string  `yaml:"Port"`
 	TotalStorage                              float64 `yaml:"TotalStorage"`
 	BarteringInitialScore                     float64 `yaml:"BarteringInitialScore"`
 	BarteringFactorAcceptableRatio            float64 `yaml:"BarteringFactorAcceptableRatio"`
@@ -27,6 +27,7 @@ type Config struct {
 	FailureModel                              string  `yaml:"FailureModel"`
 	NodeProfile                               string  `yaml:"NodeProfile"`
 	DataCopies                                int     `yaml:"DataCopies"`
+	BootstrapIp                               string  `yaml:"BootstrapIp"`
 }
 
 func ConfigExtractor(path string) Config {
@@ -56,7 +57,7 @@ func ConfigPrinter(conf Config) {
 
 	toPrint := fmt.Sprintf(`
 	Read config -- launching node with the following parameters :
-	Port : %d
+	Port : %s
 	Number of data copies : %d
 	Node total storage : %f
 	Initial scores attributed to peers : %f
@@ -69,7 +70,8 @@ func ConfigPrinter(conf Config) {
 	Score decrease upon failed test in case of wrong answer : %f
 	Score increase upon succesful test : %f
 	Failure mode : %s
-	Node profile : %s
+	Node profile : %s,
+	Bootstrap IP : %s
 	`, conf.Port,
 		conf.DataCopies,
 		conf.TotalStorage,
@@ -83,7 +85,8 @@ func ConfigPrinter(conf Config) {
 		conf.StoragetestingFailedTestWrongAnsDecrease,
 		conf.StoragetestingPassedTestIncrease,
 		conf.FailureModel,
-		conf.NodeProfile)
+		conf.NodeProfile,
+		conf.BootstrapIp)
 
 	fmt.Println(toPrint)
 }

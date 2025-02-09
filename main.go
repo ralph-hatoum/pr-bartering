@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"sync"
 
 	configextractor "bartering/config-extractor"
@@ -17,15 +16,6 @@ import (
 
 func main() {
 
-	args := os.Args
-
-	if len(args) != 2 {
-		fmt.Println("Not enough arguments ; use : ./bartering <bootstrap-IP>")
-		panic(-1)
-	}
-
-	bootstrapIp := args[1]
-
 	config := configextractor.ConfigExtractor("config.yaml")
 
 	port := fmt.Sprint(config.Port)
@@ -33,7 +23,7 @@ func main() {
 
 	configextractor.ConfigPrinter(config)
 
-	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers := functions.NodeStartup(bootstrapIp)
+	storage_pool, pending_requests, fulfilled_requests, peers, bytesAtPeers, bytesForPeers, scores, ratiosAtPeers, ratiosForPeers, storedForPeers := functions.NodeStartup(config.BootstrapIp)
 
 	fmt.Println("Bytes at peers :", bytesAtPeers)
 	fmt.Println("Bytes stored for peers : ", bytesForPeers)
@@ -45,6 +35,7 @@ func main() {
 	fmt.Println("Node ratios : ", ratiosForPeers)
 	fmt.Println("ratios at peers : ", ratiosAtPeers)
 	fmt.Println("stored for peers : ", storedForPeers)
+	fmt.Println("bootstrap ip : ", config.BootstrapIp)
 	fmt.Println("")
 
 	DecreaseBehavior, IncreaseBehavior := functions.IncreaseDecreaseBehaviors(config)
