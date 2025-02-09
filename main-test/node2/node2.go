@@ -16,8 +16,6 @@ var port = "8081"
 
 func main() {
 
-	msgCounter, _ := 0, 0
-
 	args := os.Args
 
 	bootstrapIp := args[1]
@@ -54,7 +52,7 @@ func main() {
 	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter, storageRequestsChannel, testRequestChannel)
+		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, storageRequestsChannel, testRequestChannel)
 	}()
 
 	// Wait for the goroutine to finish.

@@ -17,8 +17,6 @@ import (
 
 func main() {
 
-	msgCounter, _ := 0, 0
-
 	args := os.Args
 
 	if len(args) != 2 {
@@ -82,7 +80,7 @@ func main() {
 	go func() {
 		// PEER LISTENER - to receive messages from other peers
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter, storageRequestsChannel, testRequestsChannel)
+		peersconnect.ListenPeersRequestsTCP(port, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, storageRequestsChannel, testRequestsChannel)
 	}()
 
 	wg.Add(1)

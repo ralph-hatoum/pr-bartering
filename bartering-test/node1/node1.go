@@ -20,8 +20,6 @@ var NodeStorage = 400000000.0
 
 func main() {
 
-	msgCounter, _ := 0, 0
-
 	args := os.Args
 
 	bootstrapIp := args[1]
@@ -59,10 +57,10 @@ func main() {
 	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 	go func() {
 		defer wg.Done()
-		peersconnect.ListenPeersRequestsTCP(PORT, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, &msgCounter, storageRequestsChannel, testRequestsChannel)
+		peersconnect.ListenPeersRequestsTCP(PORT, NodeStorage, bytesAtPeers, scores, ratiosAtPeers, ratiosForPeers, bytesForPeers, &storedForPeers, config.BarteringFactorAcceptableRatio, &deletionQueue, storageRequestsChannel, testRequestsChannel)
 	}()
 
-	err := bartering.InitiateBarter("127.0.0.1", ratiosAtPeers, config.BarteringRatioIncreaseRate, PORT, &msgCounter)
+	err := bartering.InitiateBarter("127.0.0.1", ratiosAtPeers, config.BarteringRatioIncreaseRate, PORT)
 	fmt.Println(ratiosAtPeers)
 
 	if err != nil {

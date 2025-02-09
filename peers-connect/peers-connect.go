@@ -29,12 +29,12 @@ func ListenPeersRequestsTCPFailure(port string, nodeStorage float64, bytesAtPeer
 	for {
 		failureMutex.Lock()
 		conn, _ := listener.Accept()
-		go handleConnection(conn, nodeStorage, bytesAtPeers, scores, ratiosAtPeers, bytesForPeers, storedForPeers, factorAcceptableRatio, deletienQueue, msgCounter, storageRequestChannel, testRequestsChannel)
+		go handleConnection(conn, nodeStorage, bytesAtPeers, scores, ratiosAtPeers, bytesForPeers, storedForPeers, factorAcceptableRatio, deletienQueue, storageRequestChannel, testRequestsChannel)
 		failureMutex.Unlock()
 	}
 }
 
-func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, ratiosAtPeers []datastructures.NodeRatio, ratiosForPeers []datastructures.NodeRatio, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest, factorAcceptableRatio float64, deletienQueue *[]datastructures.StorageRequestTimedAccepted, msgCounter *int, storageRequestsChannel chan datastructures.StorageRequestQueueMessage, testRequestsChannel chan datastructures.TestRequestQueueMessage) {
+func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, ratiosAtPeers []datastructures.NodeRatio, ratiosForPeers []datastructures.NodeRatio, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest, factorAcceptableRatio float64, deletienQueue *[]datastructures.StorageRequestTimedAccepted, storageRequestsChannel chan datastructures.StorageRequestQueueMessage, testRequestsChannel chan datastructures.TestRequestQueueMessage) {
 
 	/*
 		TCP server to receive messages from peers
@@ -47,11 +47,11 @@ func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []dat
 	defer listener.Close()
 	for {
 		conn, _ := listener.Accept()
-		go handleConnection(conn, nodeStorage, bytesAtPeers, scores, ratiosAtPeers, bytesForPeers, storedForPeers, factorAcceptableRatio, deletienQueue, msgCounter, storageRequestsChannel, testRequestsChannel)
+		go handleConnection(conn, nodeStorage, bytesAtPeers, scores, ratiosAtPeers, bytesForPeers, storedForPeers, factorAcceptableRatio, deletienQueue, storageRequestsChannel, testRequestsChannel)
 	}
 }
 
-func handleConnection(conn net.Conn, nodeStorage float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, ratios []datastructures.NodeRatio, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest, factorAcceptableRatio float64, deletionQueue *[]datastructures.StorageRequestTimedAccepted, msgCounter *int, storageRequestsChannel chan datastructures.StorageRequestQueueMessage, testRequestsChannel chan datastructures.TestRequestQueueMessage) {
+func handleConnection(conn net.Conn, nodeStorage float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, ratios []datastructures.NodeRatio, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest, factorAcceptableRatio float64, deletionQueue *[]datastructures.StorageRequestTimedAccepted, storageRequestsChannel chan datastructures.StorageRequestQueueMessage, testRequestsChannel chan datastructures.TestRequestQueueMessage) {
 
 	/*
 		Connection handler for TCP connections received through the TCP server
@@ -63,10 +63,10 @@ func handleConnection(conn net.Conn, nodeStorage float64, bytesAtPeers []datastr
 	buffer := make([]byte, 63)
 
 	conn.Read(buffer)
-	MessageDiscriminator(buffer, conn, nodeStorage, bytesAtPeers, scores, ratios, bytesForPeers, storedForPeers, factorAcceptableRatio, deletionQueue, msgCounter, storageRequestsChannel, testRequestsChannel)
+	MessageDiscriminator(buffer, conn, nodeStorage, bytesAtPeers, scores, ratios, bytesForPeers, storedForPeers, factorAcceptableRatio, deletionQueue, storageRequestsChannel, testRequestsChannel)
 }
 
-func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, ratios []datastructures.NodeRatio, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest, factorAcceptableRatio float64, deletionQueue *[]datastructures.StorageRequestTimedAccepted, msgCounter *int, storageRequestsChannel chan datastructures.StorageRequestQueueMessage, testRequestsChannel chan datastructures.TestRequestQueueMessage) {
+func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, ratios []datastructures.NodeRatio, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest, factorAcceptableRatio float64, deletionQueue *[]datastructures.StorageRequestTimedAccepted, storageRequestsChannel chan datastructures.StorageRequestQueueMessage, testRequestsChannel chan datastructures.TestRequestQueueMessage) {
 
 	/*
 		Function used to discriminate different types of messages and call the necessary functions for each type of messages
@@ -89,7 +89,7 @@ func MessageDiscriminator(buffer []byte, conn net.Conn, nodeStorage float64, byt
 		ip, _, err := net.SplitHostPort(remoteAddr.String())
 		utils.ErrorHandler(err)
 		fmt.Println("Received bartering request from peer", ip)
-		bartering.RespondToBarterMsg(bufferString, ip, nodeStorage, bytesAtPeers, scores, conn, ratios, factorAcceptableRatio, msgCounter)
+		bartering.RespondToBarterMsg(bufferString, ip, nodeStorage, bytesAtPeers, scores, conn, ratios, factorAcceptableRatio)
 	} else if messageType == "TesRq" {
 		CID := bufferString[5 : len(bufferString)-1]
 		fmt.Println("Recieved test request for file ", CID)
