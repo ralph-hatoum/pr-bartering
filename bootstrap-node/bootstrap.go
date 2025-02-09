@@ -38,7 +38,6 @@ func main() {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("-- PEER CONNECTION -- HANDLING CONNECTION --")
-		// peers := []string{"134.214.202.223", "134.214.202.224"}
 
 		// Identify the client's IP address
 		clientIP := strings.Split(r.RemoteAddr, ":")[0]
