@@ -152,11 +152,3 @@ func createStorageRequestsLists() ([]string, []datastructures.StorageRequest, []
 
 }
 
-// func propagateToPeers(storageRequest datastructures.StorageRequest) {
-// 	messageToPropagate := storagerequests.BuildStorageRequestMessage(storageRequest)
-// 	fmt.Println(messageToPropagate)
-
-// 	// Choose peers to propagate to
-// 	// send request, await accept ?
-// 	// If refuse or no answer, make better offer ?
-// }

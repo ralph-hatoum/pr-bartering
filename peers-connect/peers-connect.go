@@ -10,11 +10,6 @@ import (
 )
 
 func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []datastructures.PeerStorageUse, scores []datastructures.NodeScore, ratiosAtPeers []datastructures.NodeRatio, ratiosForPeers []datastructures.NodeRatio, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest, factorAcceptableRatio float64, deletienQueue *[]datastructures.StorageRequestTimedAccepted, storageRequestsChannel chan datastructures.StorageRequestQueueMessage, testRequestsChannel chan datastructures.TestRequestQueueMessage) {
-
-	/*
-		TCP server to receive messages from peers
-	*/
-
 	listener, err := net.Listen("tcp", ":"+port)
 
 	if err != nil {
@@ -30,16 +25,9 @@ func ListenPeersRequestsTCP(port string, nodeStorage float64, bytesAtPeers []dat
 }
 
 func handleConnection(conn net.Conn, storageRequestsChannel chan datastructures.StorageRequestQueueMessage, testRequestsChannel chan datastructures.TestRequestQueueMessage) {
-
-	/*
-		Connection handler for TCP connections received through the TCP server
-		Arguments : a connection as net.Conn
-	*/
-
 	defer conn.Close()
 
 	buffer := make([]byte, 64)
-
 	_, err := conn.Read(buffer)
 
 	if err != nil {

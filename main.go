@@ -45,6 +45,7 @@ func main() {
 	storageRequestsChannel := make(chan datastructures.StorageRequestQueueMessage)
 	newFilesChannel := make(chan datastructures.StorageRequest)
 	testRequestsChannel := make(chan datastructures.TestRequestQueueMessage)
+	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 
 	wg.Add(1)
 	go func() {
@@ -66,7 +67,6 @@ func main() {
 	}()
 
 	wg.Add(1)
-	deletionQueue := []datastructures.StorageRequestTimedAccepted{}
 	go func() {
 		// PEER LISTENER - to receive messages from other peers
 		defer wg.Done()
