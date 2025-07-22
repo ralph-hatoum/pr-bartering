@@ -7,32 +7,30 @@ import (
 	"context"
 	"crypto/sha256"
 	"errors"
-	"fmt"
 	"io"
 	"net"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
 )
 
-func PeriodicTests(fulfilledRequests *[]datastructures.FulfilledRequest, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, testingPeriod float64, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario, bytesAtPeers []datastructures.PeerStorageUse, scoreDecreaseRefStoReq float64, newFileChannel chan datastructures.StorageRequest) {
+func PeriodicTests(fulfilledRequests *[]datastructures.FulfilledRequest, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, testingPeriod float64, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario, bytesAtPeers []datastructures.PeerStorageUse, scoreDecreaseRefStoReq float64, newFileChannel chan datastructures.StorageRequest, logger *zap.Logger) {
 
 	/*
 		Function to requests tests periodically from peers storing our data
 		Arguments : FulfilledRequest array, NodeScore array
 	*/
 
-	fmt.Println("Periodic Tester started!")
+	logger.Info("Periodic Tester started!")
 
 	for {
 		time.Sleep(time.Duration(testingPeriod) * time.Second)
 		for _, fulfilledRequest := range *fulfilledRequests {
-			if len(*fulfilledRequests) == 0 {
-				fmt.Println("No tests to do")
-			}
-			testResult := ContactPeerForTest(fulfilledRequest.CID, fulfilledRequest.Peer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior)
+			testResult := ContactPeerForTest(fulfilledRequest.CID, fulfilledRequest.Peer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior, logger)
 			if !testResult {
 				// Could not confirm storage ; need to request storage from other node
-				fmt.Println("requesting storage from other node ... ")
+				logger.Info("requesting storage from other node ... ")
 				stoReq := datastructures.StorageRequest{CID: fulfilledRequest.CID, FileSize: fulfilledRequest.FileSize}
 				newFileChannel <- stoReq
 			}
@@ -40,7 +38,7 @@ func PeriodicTests(fulfilledRequests *[]datastructures.FulfilledRequest, scores 
 	}
 }
 
-func RequestTest(CID string, filesAtPeers []datastructures.FilesAtPeers, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario) {
+func RequestTest(CID string, filesAtPeers []datastructures.FilesAtPeers, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario, logger *zap.Logger) {
 
 	/*
 		Function to request tests on a file stored at peers
@@ -50,18 +48,17 @@ func RequestTest(CID string, filesAtPeers []datastructures.FilesAtPeers, scores 
 	storers, err := findStorers(CID, filesAtPeers)
 
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
 
 	for _, storer := range storers {
 		// maybe parallelize ?
-		ContactPeerForTest(CID, storer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior)
+		ContactPeerForTest(CID, storer, scores, timerTimeoutSec, port, DecreasingBehavior, IncreasingBehavior, logger)
 	}
 
 }
 
-func HandleTest(testRequestsChannel chan datastructures.TestRequestQueueMessage) {
+func HandleTest(testRequestsChannel chan datastructures.TestRequestQueueMessage, logger *zap.Logger) {
 
 	/*
 		Function to perform tests upon recieving a test request
@@ -73,15 +70,14 @@ func HandleTest(testRequestsChannel chan datastructures.TestRequestQueueMessage)
 		conn := request.Conn
 
 		answer := computeExpectedAnswer(CID)
-		fmt.Println("Proof computed : ", answer)
+		logger.Info("Proof computed : ", zap.ByteString("answer", answer))
 		buffer := []byte(answer)
-		conn.Write(buffer) // INCREASE NBMSG COUNTER
-
+		conn.Write(buffer)
 	}
 
 }
 
-func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario) bool {
+func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeScore, timerTimeoutSec float64, port string, DecreasingBehavior []datastructures.ScoreVariationScenario, IncreasingBehavior []datastructures.ScoreVariationScenario, logger *zap.Logger) bool {
 	conn, err := net.Dial("tcp", peer+":"+port)
 
 	if err != nil {
@@ -106,33 +102,33 @@ func ContactPeerForTest(CID string, peer string, scores []datastructures.NodeSco
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	go handleResponse(ctx, &wg, responseChannel, conn)
+	go handleResponse(ctx, &wg, responseChannel, conn, logger)
 
 	timer := time.NewTimer(time.Duration(timerTimeoutSec) * time.Second)
 	defer timer.Stop()
 
-	defer wg.Wait() // Ensures `wg.Wait()` is called before function exit
+	defer wg.Wait()
 
 	select {
 	case <-timer.C:
-		fmt.Println("Timeout: No response received.")
+		logger.Info("Timeout: No response received.")
 		decreaseScore(peer, "failedTestTimeout", scores, DecreasingBehavior)
-		cancel() // Cancel the context to signal handleResponse
+		cancel()
 		return false
 	case response := <-responseChannel:
 		if checkAnswer(response, CID) {
-			fmt.Println("test passed")
+			logger.Info("test passed")
 			increaseScore(peer, "passedTest", scores, IncreasingBehavior)
 			return true
 		} else {
-			fmt.Println("test not passed")
+			logger.Info("test not passed")
 			decreaseScore(peer, "failedTestWrongAns", scores, DecreasingBehavior)
 			return false
 		}
 	}
 }
 
-func handleResponse(ctx context.Context, wg *sync.WaitGroup, responseChannel chan<- string, conn net.Conn) {
+func handleResponse(ctx context.Context, wg *sync.WaitGroup, responseChannel chan<- string, conn net.Conn, logger *zap.Logger) {
 	defer wg.Done()
 	defer close(responseChannel)
 
@@ -140,12 +136,12 @@ func handleResponse(ctx context.Context, wg *sync.WaitGroup, responseChannel cha
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Println("Context canceled, exiting handleResponse")
+			logger.Info("Context canceled, exiting handleResponse")
 			return
 		default:
 			n, err := conn.Read(buffer)
 			if err != nil {
-				fmt.Println("Error reading response:", err)
+				logger.Error("Error reading response:", zap.Error(err))
 				return
 			}
 			response := string(buffer[:n])

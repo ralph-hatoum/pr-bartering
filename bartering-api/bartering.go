@@ -10,9 +10,11 @@ import (
 
 	// "bartering/functions"
 	datastructures "bartering/data-structures"
+
+	"go.uber.org/zap"
 )
 
-func InitiateBarter(peer string, ratios []datastructures.NodeRatio, ratioIncreaseRate float64, port string) error {
+func InitiateBarter(peer string, ratios []datastructures.NodeRatio, ratioIncreaseRate float64, port string, logger zap.Logger) error {
 
 	/*
 		Function to barter the storage ratio
@@ -34,7 +36,6 @@ func InitiateBarter(peer string, ratios []datastructures.NodeRatio, ratioIncreas
 	if response == "OK\n" {
 		// update that ratio value
 		updatePeerRatio(ratios, peer, newRatio)
-		fmt.Println(ratios)
 	} else {
 		// in this case we have received a response to our barter message, we have to deal w it
 		ratio, err := strconv.ParseFloat(response[:len(response)-1], 64)

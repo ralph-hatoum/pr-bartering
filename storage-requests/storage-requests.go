@@ -3,17 +3,16 @@ package storagerequests
 import (
 	api_ipfs "bartering/api-ipfs"
 	datastructures "bartering/data-structures"
-	"bartering/utils"
 	"bufio"
 	"fmt"
 	"io"
 	"net"
-	"strconv"
-	"strings"
 	"time"
+
+	"go.uber.org/zap"
 )
 
-func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, K int, port string, bytesAtPeers []datastructures.PeerStorageUse, fulfilledRequests *[]datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64, newFileChannel chan datastructures.StorageRequest) {
+func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, K int, port string, bytesAtPeers []datastructures.PeerStorageUse, fulfilledRequests *[]datastructures.FulfilledRequest, scoreDecreaseRefStoReq float64, newFileChannel chan datastructures.StorageRequest, logger *zap.Logger) {
 	for request := range newFileChannel {
 		okRqs := 0
 		ans := ""
@@ -27,9 +26,9 @@ func StoreKCopiesOnNetwork(peerScores []datastructures.NodeScore, K int, port st
 					okRqs += 1
 					peerScores = RemovePeerFromPeers(peerScores, peer)
 				} else if ans == "ERR" {
-					fmt.Println("Skipping as connection refused by peer ", peer)
+					logger.Info("Skipping as connection refused by peer ", zap.Any("peer", peer))
 				} else if ans == "KO\n" {
-					fmt.Println("storage refused by peer : ", peer)
+					logger.Info("storage refused by peer : ", zap.Any("peer", peer))
 				}
 				if okRqs == K {
 					fmt.Println("Reached required number of copies")
@@ -200,7 +199,7 @@ func updateBytesForPeers(bytesForPeers []datastructures.PeerStorageUse, peer str
 	}
 }
 
-func HandleStorageRequest(bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest, storageRequestsChannel chan datastructures.StorageRequestQueueMessage) {
+func HandleStorageRequest(bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest, storageRequestsChannel chan datastructures.StorageRequestQueueMessage, logger *zap.Logger) {
 
 	/*
 		Function to handle a storage message type message
@@ -212,80 +211,29 @@ func HandleStorageRequest(bytesForPeers []datastructures.PeerStorageUse, storedF
 		request, conn := requestMessage.StorageRequest, requestMessage.Conn
 		peer := conn.RemoteAddr().String()
 
-		fmt.Println("Storage request : ", request, " ; checking validity ...")
+		logger.Info("Checking storage request validity : ", zap.Any("request", request))
 
 		if CheckRqValidity(request) {
-			fmt.Println("Request ", request, " valid, storing ! ")
-			fmt.Println("Pinning to IPFS ...")
+			logger.Info("Valid request, pinning to IPFS", zap.Any("request", request))
 			_, err := api_ipfs.PinToIPFS(request.CID)
 			if err == nil {
-				fmt.Println("File pinned to IPFS!")
+				logger.Info("Request pinned to IPFS!", zap.Any("request", request))
 				messageToPeer = "OK\n"
 				updateBytesForPeers(bytesForPeers, peer, request.FileSize)
 				updateFulfilledRequests(request.CID, peer, storedForPeers)
-				fmt.Println("stored for peers : ", storedForPeers)
 			} else {
 				messageToPeer = "KO\n"
-				fmt.Println("could not pin to ipfs - is ipfs running ?")
+				logger.Error("Could not pin to ipfs - is ipfs running ?", zap.Any("request", request))
 			}
 
 		} else {
-			fmt.Println("Request ", request, " not valid, not storing ! ")
+			logger.Info("Invalid request, not pinning to IPFS", zap.Any("request", request))
 
 			messageToPeer = "KO\n"
 		}
 
 		_, _ = io.WriteString(conn, messageToPeer)
 	}
-
-}
-
-func HandleStorageRequestTimed(bufferString string, conn net.Conn, bytesForPeers []datastructures.PeerStorageUse, storedForPeers *[]datastructures.FulfilledRequest, deletionQueue *[]datastructures.StorageRequestTimedAccepted) {
-
-	/*
-		SHOULD REPLACE HANDLESTORAGEREQUEST FUNC ONCE EVERYTHING IS DONE, TESTED AND WORKING
-		Function to handle a storage message type message
-		Arguments : buffer received through a tcp connection, as a string, net.Conn object, PeerStorageUse array, pointer to fulfilledRequest array
-	*/
-
-	peer := conn.RemoteAddr().(*net.TCPAddr).IP.String()
-	var messageToPeer string
-	fmt.Println("Received storage request")
-	CID := bufferString[5:51]
-	fmt.Println("CID : ", CID)
-	DurationMinutes := bufferString[51:]
-	DurationMinutes = strings.Split(DurationMinutes, "\n")[0]
-	fmt.Println("Request duration (minutes) : ", DurationMinutes)
-
-	DurationMinutesInt, err := strconv.ParseInt(DurationMinutes, 10, 64)
-	utils.ErrorHandler(err)
-
-	request := datastructures.StorageRequestTimed{DurationMinutes: DurationMinutesInt, CID: CID}
-
-	fmt.Println("Storage request : ", request, " ; checking validity ...")
-
-	if CheckRqValidityTimed(request) {
-		fmt.Println("Request ", request, " valid, storing ! ")
-		fmt.Println("Pinning to IPFS ...")
-		api_ipfs.PinToIPFS(CID)
-		fmt.Println("File pinned to IPFS!")
-		messageToPeer = "OK\n"
-		// updateBytesForPeers(bytesForPeers, peer, fileSizeFloat)
-		updateFulfilledRequests(CID, peer, storedForPeers)
-		fmt.Println("stored for peers : ", storedForPeers)
-		requestAccepted := buildStorageRequestTimedAcceptedObjectFromStorageRequestTimed(request)
-		fmt.Println("accepted  timed request : ", requestAccepted)
-		AppendStorageRequestToDeletionQueue(requestAccepted, deletionQueue)
-		fmt.Println("deletion queue", deletionQueue)
-	} else {
-		fmt.Println("Request ", request, " not valid, not storing ! ")
-
-		messageToPeer = "KO\n"
-	}
-
-	_, err = io.WriteString(conn, messageToPeer)
-
-	utils.ErrorHandler(err)
 
 }
 
@@ -451,12 +399,4 @@ func ComputeDeadlineFromTimedStorageRequest(storageRequest datastructures.Storag
 	deadline := time.Now().Add(timeToAdd)
 
 	return deadline
-}
-
-func buildStorageRequestTimedAcceptedObjectFromStorageRequestTimed(storageRequest datastructures.StorageRequestTimed) datastructures.StorageRequestTimedAccepted {
-
-	CID := storageRequest.CID
-	deadline := ComputeDeadlineFromTimedStorageRequest(storageRequest)
-
-	return datastructures.StorageRequestTimedAccepted{CID: CID, Deadline: deadline}
 }

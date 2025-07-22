@@ -6,6 +6,8 @@ import (
 	"os"
 
 	yaml "gopkg.in/yaml.v2"
+
+	"go.uber.org/zap"
 )
 
 /*
@@ -48,7 +50,7 @@ func ConfigExtractor(path string) Config {
 	return config
 }
 
-func ConfigPrinter(conf Config) {
+func ConfigPrinter(conf Config, logger *zap.Logger) {
 
 	/*
 		To print a config object in a neat format
@@ -88,5 +90,5 @@ func ConfigPrinter(conf Config) {
 		conf.NodeProfile,
 		conf.BootstrapIp)
 
-	fmt.Println(toPrint)
+	logger.Info(toPrint)
 }
